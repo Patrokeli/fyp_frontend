@@ -5,13 +5,21 @@ type User = {
   email: string;
   role: 'admin' | 'user';
   name: string;
+  phone: string;
+  region: 'Arusha' | 'Dar es Salaam' | 'Dodoma' | 'Mwanza' | 'Mbeya' | 'Morogoro' | 'Tanga' | 'Kilimanjaro' | 'Zanzibar' | 'Other';
 };
 
 type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (
+    email: string, 
+    password: string, 
+    name: string,
+    phone: string,
+    region: string
+  ) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,17 +45,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('token', data.token);
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (
+    email: string, 
+    password: string, 
+    name: string,
+    phone: string,
+    region: string
+  ) => {
     const response = await fetch('http://127.0.0.1:8000/api/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ 
+        email, 
+        password, 
+        name,
+        phone,
+        region 
+      }),
     });
 
     if (!response.ok) {
-      throw new Error('Registration failed');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Registration failed');
     }
 
     const data = await response.json();
@@ -76,7 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'Authorization': `Bearer ${token}`,
         },
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          return res.json();
+        })
         .then(data => setUser(data))
         .catch(() => {
           localStorage.removeItem('token');
