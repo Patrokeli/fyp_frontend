@@ -29,30 +29,26 @@ export function RegisterForm({ onClose, onSuccess }: RegisterFormProps) {
     password: '',
     confirmPassword: ''
   });
-  
+
   const [error, setError] = useState('');
   const { register, login } = useAuth();
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Ensure the phone starts with +255 and has max 13 characters
     if (value.startsWith('+255') && value.length <= 13) {
-      setFormData({
-        ...formData,
-        phone: value
-      });
+      setFormData({ ...formData, phone: value });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    
+
     if (formData.phone.length !== 13) {
       setError('Phone number must be in format +255XXXXXXXXX');
       return;
@@ -60,8 +56,8 @@ export function RegisterForm({ onClose, onSuccess }: RegisterFormProps) {
 
     try {
       await register(
-        formData.email, 
-        formData.password, 
+        formData.email,
+        formData.password,
         formData.name,
         formData.phone,
         formData.region
@@ -75,48 +71,48 @@ export function RegisterForm({ onClose, onSuccess }: RegisterFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-          <X className="h-6 w-6" />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center px-4 sm:px-6 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md relative shadow-lg">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+        >
+          <X className="h-5 w-5" />
         </button>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Create Account
         </h2>
+
         {error && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4">
+          <div className="bg-red-100 border border-red-300 text-red-600 text-sm p-2 rounded mb-3">
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={formData.email}
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="phone" className="block text-gray-700 mb-2">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {[
+            { id: 'name', label: 'Full Name', type: 'text' },
+            { id: 'email', label: 'Email Address', type: 'email' },
+            { id: 'password', label: 'Password', type: 'password' },
+            { id: 'confirmPassword', label: 'Confirm Password', type: 'password' },
+          ].map(({ id, label, type }) => (
+            <div key={id}>
+              <label htmlFor={id} className="block text-sm text-gray-700 mb-1">{label}</label>
+              <input
+                type={type}
+                id={id}
+                value={formData[id as keyof typeof formData]}
+                onChange={e =>
+                  setFormData({ ...formData, [id]: e.target.value })
+                }
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          ))}
+
+          <div>
+            <label htmlFor="phone" className="block text-sm text-gray-700 mb-1">
               Phone Number
             </label>
             <input
@@ -124,22 +120,23 @@ export function RegisterForm({ onClose, onSuccess }: RegisterFormProps) {
               id="phone"
               value={formData.phone}
               onChange={handlePhoneChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               pattern="\+255[0-9]{9}"
               title="Phone number must start with +255 followed by 9 digits"
             />
             <p className="text-xs text-gray-500 mt-1">Format: +255XXXXXXXXX</p>
           </div>
-          <div className="mb-4">
-            <label htmlFor="region" className="block text-gray-700 mb-2">
+
+          <div>
+            <label htmlFor="region" className="block text-sm text-gray-700 mb-1">
               Region
             </label>
             <select
               id="region"
               value={formData.region}
               onChange={e => setFormData({ ...formData, region: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               {regions.map(region => (
@@ -149,41 +146,24 @@ export function RegisterForm({ onClose, onSuccess }: RegisterFormProps) {
               ))}
             </select>
           </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={e => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="confirmPassword" className="block text-gray-700 mb-2">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md"
           >
             Register
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          By registering, you agree to our Terms of Service and Privacy Policy
+
+        <p className="mt-4 text-center text-xs text-gray-500">
+          By registering, you agree to our{' '}
+          <a href="#" className="text-blue-500 hover:underline">
+            Terms
+          </a>{' '}
+          &{' '}
+          <a href="#" className="text-blue-500 hover:underline">
+            Privacy Policy
+          </a>.
         </p>
       </div>
     </div>
