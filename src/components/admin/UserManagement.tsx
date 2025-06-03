@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Shield, ShieldOff, Trash, Edit } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Mail, Phone, MapPin, Shield, ShieldOff, Trash } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 type User = {
@@ -21,9 +21,9 @@ export function UserManagement() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/admin/users', {
+        const response = await fetch('http://127.0.0.1:8000/api/admin/customers', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
           },
         });
@@ -34,7 +34,7 @@ export function UserManagement() {
 
         const data = await response.json();
         setUsers(data);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -46,14 +46,14 @@ export function UserManagement() {
 
   const toggleUserRole = async (userId: string, currentRole: 'admin' | 'user') => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/users/${userId}/role`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/customers/${userId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          role: currentRole === 'admin' ? 'user' : 'admin'
+          role: currentRole === 'admin' ? 'user' : 'admin',
         }),
       });
 
@@ -61,24 +61,24 @@ export function UserManagement() {
         throw new Error('Failed to update user role');
       }
 
-      setUsers(users.map(user => 
-        user.id === userId 
-          ? { ...user, role: currentRole === 'admin' ? 'user' : 'admin' } 
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, role: currentRole === 'admin' ? 'user' : 'admin' }
           : user
       ));
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     }
   };
 
   const deleteUser = async (userId: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
-    
+
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/users/${userId}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/customers/${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -87,7 +87,7 @@ export function UserManagement() {
       }
 
       setUsers(users.filter(user => user.id !== userId));
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     }
   };
@@ -122,7 +122,7 @@ export function UserManagement() {
           />
         </div>
       </div>
-      
+
       {users.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           No users found
@@ -154,7 +154,7 @@ export function UserManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
+                {users.map(user => (
                   <tr key={user.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -207,7 +207,7 @@ export function UserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {user.id !== currentUser?.id && (
                         <>
-                          <button 
+                          <button
                             onClick={() => toggleUserRole(user.id, user.role)}
                             className="text-indigo-600 hover:text-indigo-900 mr-3"
                             title={user.role === 'admin' ? 'Make Regular User' : 'Make Admin'}
@@ -218,7 +218,7 @@ export function UserManagement() {
                               <Shield className="h-5 w-5" />
                             )}
                           </button>
-                          <button 
+                          <button
                             onClick={() => deleteUser(user.id)}
                             className="text-red-600 hover:text-red-900"
                             title="Delete User"
