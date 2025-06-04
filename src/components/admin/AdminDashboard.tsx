@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
-import { LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Activity, UserPlus, Briefcase } from 'lucide-react';
+import { LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, UserPlus, Briefcase } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 type TabType = 'dashboard' | 'providers' | 'users';
@@ -50,24 +50,81 @@ export function AdminDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalProviders: 0,
-    activeUsers: 0
+    totalProviders: 0
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { logout } = useAuth();
 
   const colors = isDarkMode ? colorSchemes.dark : colorSchemes.light;
 
-  // Mock data fetch - replace with actual API calls
+  // Fetch data from Laravel API
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setStats({
-        totalUsers: 1243,
-        totalProviders: 87,
-        activeUsers: 892
-      });
-    }, 500);
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    return () => clearTimeout(timer);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No authentication token found. Please log in.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch customers
+        const customersResponse = await fetch('http://127.0.0.1:8000/api/admin/customers', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!customersResponse.ok) {
+          throw new Error(`Failed to fetch customers: ${customersResponse.status} ${customersResponse.statusText}`);
+        }
+
+        const customersData = await customersResponse.json();
+        console.log('Customers API Response:', customersData);
+        const totalUsers = Array.isArray(customersData) ? customersData.length : 0;
+
+        // Fetch providers
+        const providersResponse = await fetch('http://127.0.0.1:8000/api/admin/providers', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!providersResponse.ok) {
+          throw new Error(`Failed to fetch providers: ${providersResponse.status} ${providersResponse.statusText}`);
+        }
+
+        const providersData = await providersResponse.json();
+        console.log('Providers API Response:', providersData);
+        const totalProviders = Array.isArray(providersData) ? providersData.length : 0;
+
+        setStats({
+          totalUsers,
+          totalProviders
+        });
+      } catch (error: any) {
+        console.error('Error fetching data:', error);
+        setError(error.message || 'Failed to load data. Please try again later.');
+        setStats({
+          totalUsers: 0,
+          totalProviders: 0
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Dark mode handling
@@ -109,7 +166,6 @@ export function AdminDashboard() {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 ${colors.sidebar} ${colors.border} border-r`}
       >
-        {/* Sidebar Header */}
         <div className={`p-4 border-b flex items-center justify-between ${colors.border}`}>
           <span className={`font-bold text-xl ${colors.textAccent}`}>
             Admin Dashboard
@@ -123,7 +179,6 @@ export function AdminDashboard() {
           </button>
         </div>
 
-        {/* Navigation Links */}
         <nav className="flex-1 mt-4">
           <button
             onClick={() => changeTab('dashboard')}
@@ -165,7 +220,6 @@ export function AdminDashboard() {
           </button>
         </nav>
 
-        {/* Logout Button */}
         <div className={`p-4 border-t ${colors.border}`}>
           <button
             onClick={() => {
@@ -181,12 +235,9 @@ export function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className={`flex-1 md:ml-64 ${colors.background}`}>
-        {/* Header */}
         <header className={`sticky top-0 z-40 shadow ${colors.header} ${colors.border} border-b`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between space-x-6">
-            {/* Hamburger Menu */}
             <button
               onClick={toggleSidebar}
               className={`md:hidden ${colors.textSecondary} hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none`}
@@ -195,13 +246,11 @@ export function AdminDashboard() {
               <Menu className="h-6 w-6" />
             </button>
 
-            {/* Header Title */}
             <h1 className={`text-2xl font-bold ${colors.textPrimary}`}>
               {activeTab === 'dashboard' ? 'Dashboard' : 
                activeTab === 'providers' ? 'Providers' : 'Users'}
             </h1>
 
-            {/* Dark Mode Toggle */}
             <button
               onClick={toggleDarkMode}
               className={`p-2 rounded-full ${
@@ -216,24 +265,22 @@ export function AdminDashboard() {
           </div>
         </header>
 
-        {/* Main Content Section */}
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <section
             className={`rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out ${colors.card} ${colors.border} border`}
             aria-live="polite"
           >
-            {activeTab === 'dashboard' ? (
+            {isLoading && <p className={colors.textPrimary}>Loading...</p>}
+            {error && <p className={`text-red-500 ${colors.textPrimary}`}>{error}</p>}
+            {!isLoading && !error && activeTab === 'dashboard' && (
               <DashboardContent stats={stats} colors={colors} />
-            ) : activeTab === 'providers' ? (
-              <ProviderManagement />
-            ) : (
-              <UserManagement />
             )}
+            {activeTab === 'providers' && <ProviderManagement />}
+            {activeTab === 'users' && <UserManagement />}
           </section>
         </main>
       </div>
 
-      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
@@ -253,58 +300,30 @@ const DashboardContent = ({ stats, colors }: { stats: any, colors: any }) => (
       Welcome to Your Dashboard
     </h2>
     
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <StatCard 
         icon={Users}
         title="Total Users"
         value={stats.totalUsers}
-        change="+12% from last month"
         colors={colors}
       />
       <StatCard 
         icon={Briefcase}
         title="Providers"
         value={stats.totalProviders}
-        change="+3 new this week"
-        colors={colors}
-      />
-      <StatCard 
-        icon={Activity}
-        title="Active Users"
-        value={stats.activeUsers}
-        change="72% activity rate"
         colors={colors}
       />
     </div>
 
-    <div className={`p-6 rounded-lg ${colors.card} ${colors.border} border`}>
-      <h3 className={`text-xl font-medium mb-4 ${colors.textPrimary}`}>
-        Quick Actions
-      </h3>
-      <div className="grid grid-cols-2 gap-4">
-        <ActionButton 
-          icon={UserPlus}
-          label="Add New User"
-          onClick={() => console.log('Add user')}
-          colors={colors}
-        />
-        <ActionButton 
-          icon={Briefcase}
-          label="Add Provider"
-          onClick={() => console.log('Add provider')}
-          colors={colors}
-        />
-      </div>
-    </div>
+   
   </div>
 );
 
 // Stat Card Component
-const StatCard = ({ icon: Icon, title, value, change, colors }: {
+const StatCard = ({ icon: Icon, title, value, colors }: {
   icon: any;
   title: string;
   value: number;
-  change: string;
   colors: any;
 }) => (
   <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
@@ -321,9 +340,6 @@ const StatCard = ({ icon: Icon, title, value, change, colors }: {
         </p>
       </div>
     </div>
-    <p className={`mt-2 text-sm ${colors.positiveText}`}>
-      {change}
-    </p>
   </div>
 );
 
