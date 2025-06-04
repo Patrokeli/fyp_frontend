@@ -3,10 +3,33 @@ import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
 import { LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, UserPlus, Briefcase } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type TabType = 'dashboard' | 'providers' | 'users';
 
-// Define consistent color schemes for both modes
 const colorSchemes = {
   light: {
     background: 'bg-gray-50',
@@ -23,7 +46,7 @@ const colorSchemes = {
     iconBg: 'bg-gray-100',
     buttonHover: 'hover:bg-blue-50 hover:text-blue-700',
     logoutHover: 'hover:bg-red-50 hover:text-red-600',
-    positiveText: 'text-green-600'
+    positiveText: 'text-green-600',
   },
   dark: {
     background: 'bg-gray-900',
@@ -40,8 +63,8 @@ const colorSchemes = {
     iconBg: 'bg-gray-700',
     buttonHover: 'hover:bg-gray-700 hover:text-blue-300',
     logoutHover: 'hover:bg-gray-700 hover:text-red-400',
-    positiveText: 'text-green-300'
-  }
+    positiveText: 'text-green-300',
+  },
 };
 
 export function AdminDashboard() {
@@ -50,10 +73,12 @@ export function AdminDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalProviders: 0
+    totalProviders: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registrationData, setRegistrationData] = useState<any[]>([]);
+  const [regionData, setRegionData] = useState<{ region: string; count: number }[]>([]);
   const { logout } = useAuth();
 
   const colors = isDarkMode ? colorSchemes.dark : colorSchemes.light;
@@ -76,10 +101,10 @@ export function AdminDashboard() {
         const customersResponse = await fetch('http://127.0.0.1:8000/api/admin/customers', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            Accept: 'application/json',
+          },
         });
 
         if (!customersResponse.ok) {
@@ -90,14 +115,42 @@ export function AdminDashboard() {
         console.log('Customers API Response:', customersData);
         const totalUsers = Array.isArray(customersData) ? customersData.length : 0;
 
+        // Process registration data (group by month)
+        const registrationMap = new Map<string, number>();
+        customersData.forEach((user: any) => {
+          const date = new Date(user.created_at);
+          const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
+          registrationMap.set(monthYear, (registrationMap.get(monthYear) || 0) + 1);
+        });
+
+        const sortedRegistrationData = Array.from(registrationMap.entries())
+          .map(([monthYear, count]) => ({ monthYear, count }))
+          .sort((a, b) => a.monthYear.localeCompare(b.monthYear));
+
+        setRegistrationData(sortedRegistrationData);
+
+        // Process regional distribution
+        const regionMap = new Map<string, number>();
+        customersData.forEach((user: any) => {
+          const region = user.region || 'Unknown';
+          regionMap.set(region, (regionMap.get(region) || 0) + 1);
+        });
+
+        const regionData = Array.from(regionMap.entries()).map(([region, count]) => ({
+          region,
+          count,
+        }));
+
+        setRegionData(regionData);
+
         // Fetch providers
         const providersResponse = await fetch('http://127.0.0.1:8000/api/admin/providers', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            Accept: 'application/json',
+          },
         });
 
         if (!providersResponse.ok) {
@@ -110,15 +163,17 @@ export function AdminDashboard() {
 
         setStats({
           totalUsers,
-          totalProviders
+          totalProviders,
         });
       } catch (error: any) {
         console.error('Error fetching data:', error);
         setError(error.message || 'Failed to load data. Please try again later.');
         setStats({
           totalUsers: 0,
-          totalProviders: 0
+          totalProviders: 0,
         });
+        setRegistrationData([]);
+        setRegionData([]);
       } finally {
         setIsLoading(false);
       }
@@ -142,7 +197,7 @@ export function AdminDashboard() {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prev => {
+    setIsDarkMode((prev) => {
       const newMode = !prev;
       localStorage.setItem('theme', newMode ? 'dark' : 'light');
       return newMode;
@@ -247,16 +302,13 @@ export function AdminDashboard() {
             </button>
 
             <h1 className={`text-2xl font-bold ${colors.textPrimary}`}>
-              {activeTab === 'dashboard' ? 'Dashboard' : 
-               activeTab === 'providers' ? 'Providers' : 'Users'}
+              {activeTab === 'dashboard' ? 'Dashboard' : activeTab === 'providers' ? 'Providers' : 'Users'}
             </h1>
 
             <button
               onClick={toggleDarkMode}
               className={`p-2 rounded-full ${
-                isDarkMode
-                  ? 'bg-blue-600 text-white hover:bg-blue-500'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               } focus:outline-none transition-colors duration-200`}
               aria-label="Toggle Dark Mode"
             >
@@ -273,7 +325,7 @@ export function AdminDashboard() {
             {isLoading && <p className={colors.textPrimary}>Loading...</p>}
             {error && <p className={`text-red-500 ${colors.textPrimary}`}>{error}</p>}
             {!isLoading && !error && activeTab === 'dashboard' && (
-              <DashboardContent stats={stats} colors={colors} />
+              <DashboardContent stats={stats} colors={colors} registrationData={registrationData} regionData={regionData} />
             )}
             {activeTab === 'providers' && <ProviderManagement />}
             {activeTab === 'users' && <UserManagement />}
@@ -294,67 +346,155 @@ export function AdminDashboard() {
 }
 
 // Dashboard Content Component
-const DashboardContent = ({ stats, colors }: { stats: any, colors: any }) => (
-  <div>
-    <h2 className={`text-3xl font-semibold ${colors.textPrimary} mb-6`}>
-      Welcome to Your Dashboard
-    </h2>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <StatCard 
-        icon={Users}
-        title="Total Users"
-        value={stats.totalUsers}
-        colors={colors}
-      />
-      <StatCard 
-        icon={Briefcase}
-        title="Providers"
-        value={stats.totalProviders}
-        colors={colors}
-      />
-    </div>
+const DashboardContent = ({ stats, colors, registrationData, regionData }: { stats: any; colors: any; registrationData: any[]; regionData: { region: string; count: number }[] }) => {
+  // Line chart data
+  const lineChartData = {
+    labels: registrationData.map((data) => data.monthYear),
+    datasets: [
+      {
+        label: 'Registrations',
+        data: registrationData.map((data) => data.count),
+        borderColor: '#3B82F6', // Blue
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
 
-   
-  </div>
-);
+  const lineChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'User Registrations Over Time',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Registrations',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Month-Year',
+        },
+      },
+    },
+  };
+
+  // Bar chart data
+  const barChartData = {
+    labels: regionData.map((data) => data.region),
+    datasets: [
+      {
+        label: 'Users by Region',
+        data: regionData.map((data) => data.count),
+        backgroundColor: [
+          '#3B82F6', // Blue
+          '#10B981', // Green
+          '#F59E0B', // Yellow
+          '#EF4444', // Red
+          '#8B5CF6', // Purple
+          '#EC4899', // Pink
+          '#6B7280', // Gray
+          '#14B8A6', // Teal
+          '#F97316', // Orange
+          '#6366F1', // Indigo
+        ],
+        borderColor: [
+          '#1E40AF',
+          '#047857',
+          '#B45309',
+          '#B91C1C',
+          '#5B21B6',
+          '#BE185D',
+          '#4B5563',
+          '#0F766E',
+          '#C2410C',
+          '#4338CA',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'User Distribution by Region',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Users',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Region',
+        },
+      },
+    },
+  };
+
+  return (
+    <div>
+      <h2 className={`text-3xl font-semibold ${colors.textPrimary} mb-6`}>Welcome!</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <StatCard icon={Users} title="Total Users" value={stats.totalUsers} colors={colors} />
+        <StatCard icon={Briefcase} title="Providers" value={stats.totalProviders} colors={colors} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
+          <Line data={lineChartData} options={lineChartOptions} />
+        </div>
+        <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
+          <Bar data={barChartData} options={barChartOptions} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Stat Card Component
-const StatCard = ({ icon: Icon, title, value, colors }: {
-  icon: any;
-  title: string;
-  value: number;
-  colors: any;
-}) => (
+const StatCard = ({ icon: Icon, title, value, colors }: { icon: any; title: string; value: number; colors: any }) => (
   <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
     <div className="flex items-center">
       <div className={`p-3 rounded-full ${colors.iconBg} mr-4`}>
         <Icon className={`h-6 w-6 ${colors.textAccent}`} />
       </div>
       <div>
-        <p className={`text-sm font-medium ${colors.textSecondary}`}>
-          {title}
-        </p>
-        <p className={`text-2xl font-semibold ${colors.textPrimary}`}>
-          {value.toLocaleString()}
-        </p>
+        <p className={`text-sm font-medium ${colors.textSecondary}`}>{title}</p>
+        <p className={`text-2xl font-semibold ${colors.textPrimary}`}>{value.toLocaleString()}</p>
       </div>
     </div>
   </div>
 );
 
 // Action Button Component
-const ActionButton = ({ icon: Icon, label, onClick, colors }: {
-  icon: any;
-  label: string;
-  onClick: () => void;
-  colors: any;
-}) => (
+const ActionButton = ({ icon: Icon, label, onClick, colors }: { icon: any; label: string; onClick: () => void; colors: any }) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center p-4 rounded-lg transition-all ${
-      colors.card
-    } ${colors.border} border ${colors.buttonHover}`}
+    className={`flex items-center justify-center p-4 rounded-lg transition-all ${colors.card} ${colors.border} border ${colors.buttonHover}`}
   >
     <Icon className={`h-5 w-5 mr-2 ${colors.textAccent}`} />
     <span className={colors.textPrimary}>{label}</span>
