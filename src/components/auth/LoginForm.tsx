@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogIn, X } from 'lucide-react';
+import { LogIn, X, User } from 'lucide-react';
 
 type LoginFormProps = {
   onClose: () => void;
   onSuccess?: () => void;
+  onSwitchToRegister: () => void;
 };
 
-export function LoginForm({ onClose, onSuccess }: LoginFormProps) {
+export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
@@ -29,53 +30,77 @@ export function LoginForm({ onClose, onSuccess }: LoginFormProps) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 w-full max-w-md relative shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto transition-all">
+        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
         >
           <X className="h-6 w-6" />
         </button>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Login</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+        {/* Heading */}
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
+          <User className="h-6 w-6" />
+          Welcome Back
+        </h2>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className="text-sm text-gray-600">
-              Email address
+            <label htmlFor="email" className="block text-sm text-gray-700 mb-1">
+              Email Address
             </label>
             <input
               id="email"
               type="email"
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
+
           <div>
-            <label htmlFor="password" className="text-sm text-gray-600">
+            <label htmlFor="password" className="block text-sm text-gray-700 mb-1">
               Password
-              <a href="#" className="float-right text-blue-500 text-xs hover:underline">
+              <a href="#" className="float-right text-xs text-blue-600 hover:underline">
                 Forgot password?
               </a>
             </label>
             <input
               id="password"
               type="password"
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
+
           <div className="flex items-center space-x-2 text-sm">
             <input
               type="checkbox"
               checked={agree}
               onChange={() => setAgree(!agree)}
-              className="form-checkbox"
+              className="form-checkbox h-4 w-4 text-blue-600"
             />
             <label htmlFor="agree" className="text-gray-600">
               I agree to the{' '}
@@ -84,19 +109,25 @@ export function LoginForm({ onClose, onSuccess }: LoginFormProps) {
               </a>
             </label>
           </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md flex items-center justify-center"
+            className="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-2 rounded-lg flex items-center justify-center shadow-md gap-2"
           >
-            <LogIn className="h-5 w-5 mr-2" />
-            Login
+            <LogIn className="h-5 w-5" />
+            <span>Login</span>
           </button>
         </form>
+
+        {/* Toggle to Register */}
         <p className="text-center text-sm text-gray-600 mt-6">
-          Have an account?{' '}
-          <a href="#" className="text-blue-600 font-medium hover:underline">
-            Sign in
-          </a>
+          Don't have an account?{' '}
+          <span
+            onClick={onSwitchToRegister}
+            className="text-blue-600 font-medium hover:underline cursor-pointer"
+          >
+            Create one
+          </span>
         </p>
       </div>
     </div>

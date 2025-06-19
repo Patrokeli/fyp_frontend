@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProviderComparison } from './components/ProviderComparison';
@@ -19,6 +19,29 @@ function AppContent() {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
+  // Function to switch from register to login
+  const switchToLogin = () => {
+    setShowRegister(false);
+    setShowLogin(true);
+    
+  };
+  
+
+  // Function to switch from login to register
+  const switchToRegister = () => {
+    setShowLogin(false);
+    setShowRegister(true);
+  };
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (showLogin || showRegister) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }, [showLogin, showRegister]);
+
   if (user?.role === 'admin') {
     return <AdminDashboard />;
   }
@@ -34,6 +57,7 @@ function AppContent() {
         <RegisterForm
           onClose={() => setShowRegister(false)}
           onSuccess={() => setShowRegister(false)}
+          onSwitchToLogin={switchToLogin}
         />
       )}
 
@@ -41,6 +65,7 @@ function AppContent() {
         <LoginForm
           onClose={() => setShowLogin(false)}
           onSuccess={() => setShowLogin(false)}
+          onSwitchToRegister={switchToRegister}
         />
       )}
 
