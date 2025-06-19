@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogIn, X } from 'lucide-react';
+import { LogIn, X, User } from 'lucide-react';
 
 type LoginFormProps = {
   onClose: () => void;
@@ -50,7 +50,10 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
         </button>
 
         {/* Heading */}
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
+          <User className="h-6 w-6" />
+          Welcome Back
+        </h2>
 
         {/* Error Message */}
         {error && (
@@ -109,10 +112,10 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-2 rounded-lg flex items-center justify-center shadow-md"
+            className="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-2 rounded-lg flex items-center justify-center shadow-md gap-2"
           >
-            <LogIn className="h-5 w-5 mr-2" />
-            Login
+            <LogIn className="h-5 w-5" />
+            <span>Login</span>
           </button>
         </form>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { X } from 'lucide-react';
+import { X, User, ArrowRight } from 'lucide-react';
 
 type RegisterFormProps = {
   onClose: () => void;
@@ -91,7 +91,10 @@ export function RegisterForm({ onClose, onSuccess, onSwitchToLogin }: RegisterFo
         </button>
 
         {/* Heading */}
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create Account</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
+          <User className="h-6 w-6" />
+          Create Account
+        </h2>
 
         {/* Error */}
         {error && (
@@ -164,9 +167,10 @@ export function RegisterForm({ onClose, onSuccess, onSwitchToLogin }: RegisterFo
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
           >
-            Register
+            <span>Register</span>
+            <ArrowRight className="h-5 w-5" />
           </button>
         </form>
 
@@ -186,9 +190,9 @@ export function RegisterForm({ onClose, onSuccess, onSwitchToLogin }: RegisterFo
           Already have an account?{' '}
           <span
             onClick={onSwitchToLogin}
-            className="text-blue-600 font-medium hover:underline cursor-pointer"
+            className="text-blue-600 font-medium hover:underline cursor-pointer flex items-center gap-1"
           >
-            Login here
+            Login here <ArrowRight className="h-4 w-4" />
           </span>
         </p>
       </div>
