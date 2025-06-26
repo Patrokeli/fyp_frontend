@@ -1,56 +1,39 @@
 import React from 'react';
-import { 
-  Home, 
-  LogOut, 
-  Settings, 
-  CreditCard, 
-  HelpCircle, 
-  X, 
-  Users, 
-  Calendar, 
-  Bell, 
-  BarChart2, 
-  Tag, 
-  Gift, 
-  Star, 
-  AlertCircle,
-  Wrench,
-  Search // Add this import
+import {
+  Home,
+  LogOut,
+  X,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void;
+  currentTab: string;
+  changeTab: (tab: 'dashboard' | 'search') => void;
 };
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/');
+      window.location.href = '/'; // Hard reload to home
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    if (onClose) onClose();
-  };
-
   const navItems = [
-    { name: 'Dashboard', icon: <Home className="h-5 w-5" />, path: '/dashboard' },
-    { name: 'Search Providers', icon: <Search className="h-5 w-5" />, path: '/search' },
+    { name: 'Dashboard', icon: <Home className="h-5 w-5" />, tab: 'dashboard' },
+    { name: 'Search Providers', icon: <Search className="h-5 w-5" />, tab: 'search' },
   ];
 
   return (
     <div className="flex flex-col h-full">
-      {/* Close button (mobile only) */}
+      {/* Header */}
       <div className="flex items-center justify-between h-16 px-4 border-b">
         <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
         {onClose && (
@@ -63,12 +46,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <button
             key={item.name}
-            onClick={() => handleNavigation(item.path)}
-            className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={() => {
+              changeTab(item.tab as 'dashboard' | 'search');
+              if (onClose) onClose(); // Close sidebar on mobile
+            }}
+            className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${currentTab === item.tab
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100'}`}
           >
             <span className="mr-3 text-gray-500">{item.icon}</span>
             <span>{item.name}</span>
@@ -76,6 +66,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ))}
       </nav>
 
+      {/* Footer */}
       <div className="p-4 border-t">
         {user && (
           <div className="flex items-center mb-4">
