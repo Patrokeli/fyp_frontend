@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Star, LifeBuoy } from 'lucide-react';
+
 import {
   Home,
   LogOut,
@@ -11,7 +13,8 @@ type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void;
   currentTab: string;
-  changeTab: (tab: 'dashboard' | 'search') => void;
+  changeTab: (tab: 'dashboard' | 'search' | 'compare' | 'rate' | 'support') => void;
+
 };
 
 export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps) {
@@ -33,7 +36,8 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
     { name: 'Dashboard', icon: <Home className="h-5 w-5" aria-hidden="true" />, tab: 'dashboard' },
     { name: 'Search Providers', icon: <Search className="h-5 w-5" aria-hidden="true" />, tab: 'search' },
     { name: 'Compare Providers', icon: <Search />, tab: 'compare' },
-    
+      { name: 'Rate Service', icon: <Star className="h-5 w-5" aria-hidden="true" />, tab: 'rate' },        // New
+  { name: 'Support Request', icon: <LifeBuoy className="h-5 w-5" aria-hidden="true" />, tab: 'support' }
     
   ];
 
