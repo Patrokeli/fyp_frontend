@@ -1,5 +1,21 @@
 import React from 'react';
-import { Home, LogOut, Settings, CreditCard, HelpCircle, X } from 'lucide-react';
+import { 
+  Home, 
+  LogOut, 
+  Settings, 
+  CreditCard, 
+  HelpCircle, 
+  X, 
+  Users, 
+  Calendar, 
+  Bell, 
+  BarChart2, 
+  Tag, 
+  Gift, 
+  Star, 
+  AlertCircle,
+  Wrench // Replaced Tool with Wrench (similar functionality)
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,76 +44,57 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" />, path: '/dashboard' },
-    { name: 'Payments', icon: <CreditCard className="h-5 w-5" />, path: '/payments' },
-    { name: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
-    { name: 'Help', icon: <HelpCircle className="h-5 w-5" />, path: '/help' },
+    
   ];
 
   return (
-    <>
-      {/* Mobile backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 right-0 z-50 w-64 h-full bg-white shadow-lg transform ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        } md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Close button (mobile only) */}
+    <div className="flex flex-col h-full">
+      {/* Close button (mobile only) */}
+      <div className="flex items-center justify-between h-16 px-4 border-b">
+        <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
+        {onClose && (
           <button
             onClick={onClose}
-            className="md:hidden absolute top-4 left-4 text-gray-500 hover:text-gray-700"
+            className="md:hidden text-gray-500 hover:text-gray-700"
           >
             <X className="h-6 w-6" />
           </button>
+        )}
+      </div>
 
-          {/* Sidebar content remains the same */}
-          <div className="flex items-center justify-center h-16 px-4 border-b">
-            <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
+      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => handleNavigation(item.path)}
+            className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <span className="mr-3 text-gray-500">{item.icon}</span>
+            <span>{item.name}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        {user && (
+          <div className="flex items-center mb-4">
+            <div className="bg-blue-100 text-blue-800 rounded-full h-10 w-10 flex items-center justify-center font-medium">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-700">{user.name}</p>
+              <p className="text-xs text-gray-500 truncate max-w-[180px]">{user.email}</p>
+            </div>
           </div>
-
-          <nav className="flex-1 px-4 py-4 space-y-1">
-            {navItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => handleNavigation(item.path)}
-                className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-              >
-                <span className="mr-3">{item.icon}</span>
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div className="p-4 border-t">
-            {user && (
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 text-blue-800 rounded-full h-10 w-10 flex items-center justify-center">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
-              </div>
-            )}
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOut className="h-5 w-5 mr-3" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-    </>
+        )}
+        <button
+          onClick={handleLogout}
+          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+        >
+          <LogOut className="h-5 w-5 mr-3 text-gray-500" />
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
   );
 }
