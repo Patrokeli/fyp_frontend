@@ -32,6 +32,9 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
   const navItems = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" aria-hidden="true" />, tab: 'dashboard' },
     { name: 'Search Providers', icon: <Search className="h-5 w-5" aria-hidden="true" />, tab: 'search' },
+    { name: 'Compare Providers', icon: <Search />, tab: 'compare' },
+    
+    
   ];
 
   return (

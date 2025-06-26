@@ -6,11 +6,13 @@ import { useSearch } from '../../contexts/SearchContext';
 import { Search, Menu } from 'lucide-react';
 // src/components/customer/CustomerDashboard.tsx
 import { SearchProviders } from './SearchProviders'; 
+import { ProviderComparison } from './ProviderComparison';
+
 
 
 export function CustomerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search'>('dashboard');
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search'| 'compare'>('dashboard');
 
   const { user } = useAuth();
   const {
@@ -87,6 +89,8 @@ export function CustomerDashboard() {
             )}
 
            {currentTab === 'search' && <SearchProviders />}
+           {currentTab === 'compare' && <ProviderComparison />}
+
 
           </div>
         </main>
