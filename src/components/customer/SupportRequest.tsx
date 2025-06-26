@@ -73,7 +73,7 @@ export function SupportRequest({ providers }: SupportRequestProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-lg p-8 space-y-6"
+      className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-lg p-8 space-y-6"
       noValidate
       aria-live="polite"
     >
@@ -83,55 +83,58 @@ export function SupportRequest({ providers }: SupportRequestProps) {
         <p className="text-gray-600 text-sm">We’ll follow up via your registered email.</p>
       </div>
 
-      {/* Provider */}
-      <div>
-        <label htmlFor="provider" className="block mb-2 font-semibold text-gray-700">
-          Select Provider <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="provider"
-          ref={providerRef}
-          value={selectedProvider}
-          onChange={(e) => setSelectedProvider(e.target.value)}
-          className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-            errors.provider ? 'border-red-500' : 'border-gray-300'
-          }`}
-          required
-        >
-          <option value="" disabled>
-            -- Choose Provider --
-          </option>
-          {providers.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
+      {/* Responsive grid: Provider + Name + Email */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Provider */}
+        <div>
+          <label htmlFor="provider" className="block mb-2 font-semibold text-gray-700">
+            Select Provider <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="provider"
+            ref={providerRef}
+            value={selectedProvider}
+            onChange={(e) => setSelectedProvider(e.target.value)}
+            className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+              errors.provider ? 'border-red-500' : 'border-gray-300'
+            }`}
+            required
+          >
+            <option value="" disabled>
+              -- Choose Provider --
             </option>
-          ))}
-        </select>
-        {errors.provider && (
-          <p className="mt-1 text-sm text-red-600">{errors.provider}</p>
-        )}
-      </div>
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          {errors.provider && (
+            <p className="mt-1 text-sm text-red-600">{errors.provider}</p>
+          )}
+        </div>
 
-      {/* Name (read-only) */}
-      <div>
-        <label className="block mb-2 font-semibold text-gray-700">Your Name</label>
-        <input
-          type="text"
-          value={user?.name || ''}
-          readOnly
-          className="w-full rounded-md border bg-gray-100 px-3 py-2 text-gray-700 cursor-not-allowed"
-        />
-      </div>
+        {/* Name */}
+        <div>
+          <label className="block mb-2 font-semibold text-gray-700">Your Name</label>
+          <input
+            type="text"
+            value={user?.name || ''}
+            readOnly
+            className="w-full rounded-md border bg-gray-100 px-3 py-2 text-gray-700 cursor-not-allowed"
+          />
+        </div>
 
-      {/* Email (read-only) */}
-      <div>
-        <label className="block mb-2 font-semibold text-gray-700">Email Address</label>
-        <input
-          type="email"
-          value={user?.email || ''}
-          readOnly
-          className="w-full rounded-md border bg-gray-100 px-3 py-2 text-gray-700 cursor-not-allowed"
-        />
+        {/* Email */}
+        <div>
+          <label className="block mb-2 font-semibold text-gray-700">Email Address</label>
+          <input
+            type="email"
+            value={user?.email || ''}
+            readOnly
+            className="w-full rounded-md border bg-gray-100 px-3 py-2 text-gray-700 cursor-not-allowed"
+          />
+        </div>
       </div>
 
       {/* Issue */}
@@ -158,7 +161,7 @@ export function SupportRequest({ providers }: SupportRequestProps) {
         )}
       </div>
 
-      {/* Submit */}
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
