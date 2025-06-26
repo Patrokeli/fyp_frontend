@@ -1,17 +1,13 @@
+// src/components/customer/Sidebar.tsx
 import React, { useState } from 'react';
-import {
-  Home,
-  LogOut,
-  X,
-  Search,
-} from 'lucide-react';
+import { Home, LogOut, X, Search, Star, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void;
   currentTab: string;
-  changeTab: (tab: 'dashboard' | 'search') => void;
+  changeTab: (tab: 'dashboard' | 'search' | 'compare' | 'rate' | 'support') => void;
 };
 
 export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps) {
@@ -32,9 +28,9 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
   const navItems = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" aria-hidden="true" />, tab: 'dashboard' },
     { name: 'Search Providers', icon: <Search className="h-5 w-5" aria-hidden="true" />, tab: 'search' },
-    { name: 'Compare Providers', icon: <Search />, tab: 'compare' },
-    
-    
+    { name: 'Compare Providers', icon: <Search className="h-5 w-5" aria-hidden="true" />, tab: 'compare' },
+    { name: 'Rate Service', icon: <Star className="h-5 w-5" aria-hidden="true" />, tab: 'rate' },
+    { name: 'Request Support', icon: <HelpCircle className="h-5 w-5" aria-hidden="true" />, tab: 'support' },
   ];
 
   return (
@@ -62,14 +58,13 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
               <li key={item.name}>
                 <button
                   onClick={() => {
-                    changeTab(item.tab as 'dashboard' | 'search');
+                    changeTab(item.tab as any);
                     if (onClose) onClose(); // Close sidebar on mobile
                   }}
                   className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors
                     ${isActive
                       ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500'}
-                  `}
+                      : 'text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500'}`}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <span className={`mr-3 ${isActive ? 'text-blue-600' : 'text-gray-500'}`}>

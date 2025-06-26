@@ -1,18 +1,18 @@
-// Only the imports and state section need update at the top:
+// src/components/customer/CustomerDashboard.tsx
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { Search, Menu } from 'lucide-react';
-// src/components/customer/CustomerDashboard.tsx
+
 import { SearchProviders } from './SearchProviders'; 
 import { ProviderComparison } from './ProviderComparison';
-
-
+import { RateService } from './RateService';
+import { SupportRequest } from './SupportRequest';
 
 export function CustomerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search'| 'compare'>('dashboard');
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search' | 'compare' | 'rate' | 'support'>('dashboard');
 
   const { user } = useAuth();
   const {
@@ -47,7 +47,7 @@ export function CustomerDashboard() {
           <div
             className="fixed inset-0 bg-gray-600 bg-opacity-75"
             onClick={() => setSidebarOpen(false)}
-          ></div>
+          />
           <div className="relative flex flex-col w-80 max-w-xs h-full bg-white">
             <Sidebar
               isOpen={sidebarOpen}
@@ -68,6 +68,7 @@ export function CustomerDashboard() {
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-gray-500 hover:text-gray-600"
+              aria-label="Toggle sidebar"
             >
               <Menu className="h-6 w-6" />
             </button>
@@ -88,10 +89,28 @@ export function CustomerDashboard() {
               </div>
             )}
 
-           {currentTab === 'search' && <SearchProviders />}
-           {currentTab === 'compare' && <ProviderComparison />}
-
-
+            {currentTab === 'search' && <SearchProviders />}
+            {currentTab === 'compare' && <ProviderComparison />}
+            {currentTab === 'rate' && (
+              <RateService
+                providers={[
+                  { id: '1', name: 'Zuku' },
+                  { id: '2', name: 'TTCL' },
+                  { id: '3', name: 'SimbaNet' },
+                  { id: '4', name: 'YAS Fiber' },
+                ]}
+              />
+            )}
+            {currentTab === 'support' && (
+              <SupportRequest
+                providers={[
+                  { id: '1', name: 'Zuku' },
+                  { id: '2', name: 'TTCL' },
+                  { id: '3', name: 'SimbaNet' },
+                  { id: '4', name: 'YAS Fiber' },
+                ]}
+              />
+            )}
           </div>
         </main>
       </div>

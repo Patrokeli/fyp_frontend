@@ -1,7 +1,6 @@
 // src/components/customer/ProviderComparison.tsx
 import React, { useState } from 'react';
 import { Wifi } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 
 type ProviderAction = {
   name: string;
@@ -22,8 +21,6 @@ type Provider = {
 
 export function ProviderComparison() {
   const [selectedSpeed, setSelectedSpeed] = useState<'all' | 'basic' | 'standard' | 'premium'>('all');
-  const { user } = useAuth();
-  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
 
   const providers: Provider[] = [
     {
@@ -37,8 +34,6 @@ export function ProviderComparison() {
       rating: 4.2,
       actions: [
         { name: 'Installation Request', url: 'https://zuku.co.tz/request-installation' },
-        { name: 'Support', url: 'https://zuku.co.tz/support' },
-        { name: 'Coverage Check', url: 'https://zuku.co.tz/coverage' },
       ],
     },
     {
@@ -52,8 +47,6 @@ export function ProviderComparison() {
       rating: 3.8,
       actions: [
         { name: 'Installation Request', url: 'https://ttcl.co.tz/request-installation' },
-        { name: 'Support', url: 'https://ttcl.co.tz/support' },
-        { name: 'Coverage Check', url: 'https://ttcl.co.tz/coverage' },
       ],
     },
     {
@@ -67,8 +60,6 @@ export function ProviderComparison() {
       rating: 4.5,
       actions: [
         { name: 'Installation Request', url: 'https://simbanet.co.tz/request-installation' },
-        { name: 'Support', url: 'https://simbanet.co.tz/support' },
-        { name: 'Coverage Check', url: 'https://simbanet.co.tz/coverage' },
       ],
     },
     {
@@ -82,8 +73,6 @@ export function ProviderComparison() {
       rating: 4.0,
       actions: [
         { name: 'Installation Request', url: 'https://yasfiber.co.tz/request-installation' },
-        { name: 'Support', url: 'https://yasfiber.co.tz/support' },
-        { name: 'Coverage Check', url: 'https://yasfiber.co.tz/coverage' },
       ],
     },
   ];
@@ -102,10 +91,6 @@ export function ProviderComparison() {
   });
 
   const handleActionClick = (url: string) => {
-    if (!user) {
-      setShowRegisterPrompt(true);
-      return;
-    }
     window.open(url, '_blank');
   };
 
@@ -227,32 +212,6 @@ export function ProviderComparison() {
           </button>
         </div>
       </div>
-
-      {/* Registration prompt modal */}
-      {showRegisterPrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-xl font-bold mb-4">Registration Required</h3>
-            <p className="text-gray-600 mb-6">
-              Please register to access provider services and installation requests.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button onClick={() => setShowRegisterPrompt(false)} className="text-gray-600 hover:text-gray-900">
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowRegisterPrompt(false);
-                  // TODO: Add logic to show registration form/modal here
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-              >
-                Register Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
