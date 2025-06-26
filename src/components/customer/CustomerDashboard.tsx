@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -7,6 +7,84 @@ import { SearchProviders } from './SearchProviders';
 import { ProviderComparison } from './ProviderComparison';
 import { RateService } from './RateService';
 import { SupportRequest } from './SupportRequest';
+
+// Particle background component
+const ParticleBackground = () => {
+  useEffect(() => {
+    const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    const particles: {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      color: string;
+    }[] = [];
+    const particleCount = 30;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3 + 1,
+        speedX: Math.random() * 0.5 - 0.25,
+        speedY: Math.random() * 0.5 - 0.25,
+        color: `rgba(200, 200, 255, ${Math.random() * 0.3 + 0.1})`
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        
+        // Update positions
+        p.x += p.speedX;
+        p.y += p.speedY;
+        
+        // Bounce off edges
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+        
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      
+      requestAnimationFrame(animate);
+    };
+
+    const handleResize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      id="particle-canvas"
+      className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-10"
+    />
+  );
+};
 
 export function CustomerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,9 +117,12 @@ export function CustomerDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 relative overflow-hidden">
+      {/* Particle Background Animation */}
+      <ParticleBackground />
+
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex md:flex-shrink-0">
+      <div className="hidden md:flex md:flex-shrink-0 z-10">
         <Sidebar
           isOpen={true}
           currentTab={currentTab}
@@ -56,7 +137,7 @@ export function CustomerDashboard() {
             className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="relative flex flex-col w-80 max-w-xs h-full">
+          <div className="relative flex flex-col w-80 max-w-xs h-full z-50">
             <Sidebar
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
@@ -71,7 +152,7 @@ export function CustomerDashboard() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Top Navigation Bar */}
         <header className="bg-white shadow-sm z-30 border-b border-gray-200">
           <div className="flex items-center justify-between px-6 py-3">
@@ -126,13 +207,13 @@ export function CustomerDashboard() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
             {/* Dashboard Welcome Section */}
             {currentTab === 'dashboard' && (
               <div className="space-y-6">
                 {/* Welcome Card */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
                   {user && (
                     <div>
                       <h1 className="text-2xl font-bold text-gray-800 mb-2">
@@ -150,7 +231,12 @@ export function CustomerDashboard() {
                   {dashboardStats.map((stat, index) => (
                     <div 
                       key={index} 
-                      className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${stat.color === 'blue' ? 'border-blue-500' : stat.color === 'orange' ? 'border-orange-500' : stat.color === 'purple' ? 'border-purple-500' : 'border-green-500'}`}
+                      className={`bg-white rounded-xl shadow-sm p-5 border-l-4 backdrop-blur-sm bg-opacity-90 ${
+                        stat.color === 'blue' ? 'border-blue-500' : 
+                        stat.color === 'orange' ? 'border-orange-500' : 
+                        stat.color === 'purple' ? 'border-purple-500' : 
+                        'border-green-500'
+                      }`}
                     >
                       <div className="flex justify-between">
                         <div>
@@ -158,7 +244,12 @@ export function CustomerDashboard() {
                           <p className="text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
                           <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
                         </div>
-                        <div className={`h-10 w-10 rounded-full ${stat.color === 'blue' ? 'bg-blue-100 text-blue-600' : stat.color === 'orange' ? 'bg-orange-100 text-orange-600' : stat.color === 'purple' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'} flex items-center justify-center`}>
+                        <div className={`h-10 w-10 rounded-full ${
+                          stat.color === 'blue' ? 'bg-blue-100 text-blue-600' : 
+                          stat.color === 'orange' ? 'bg-orange-100 text-orange-600' : 
+                          stat.color === 'purple' ? 'bg-purple-100 text-purple-600' : 
+                          'bg-green-100 text-green-600'
+                        } flex items-center justify-center`}>
                           {stat.icon}
                         </div>
                       </div>
@@ -167,7 +258,7 @@ export function CustomerDashboard() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {quickActions.map((action, index) => (
@@ -189,7 +280,7 @@ export function CustomerDashboard() {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h2>
                   <div className="space-y-4">
                     {[1, 2, 3].map((item) => (
@@ -211,7 +302,7 @@ export function CustomerDashboard() {
 
             {/* Tab Content */}
             {currentTab !== 'dashboard' && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden backdrop-blur-sm bg-opacity-90">
                 {currentTab === 'search' && <SearchProviders />}
                 {currentTab === 'compare' && <ProviderComparison />}
                 {currentTab === 'rate' && (
