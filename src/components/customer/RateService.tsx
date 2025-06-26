@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 type RateServiceProps = {
   providers: { id: string; name: string }[];
@@ -64,6 +64,16 @@ export function RateService({ providers }: RateServiceProps) {
       noValidate
       aria-live="polite"
     >
+      {/* Title and Subtitle */}
+      <div className="mb-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          We Value Your Feedback
+        </h1>
+        <p className="text-gray-600 text-sm">
+          Help us improve Fiber services by sharing your thoughts.
+        </p>
+      </div>
+
       {/* Provider Selection */}
       <div>
         <label htmlFor="provider" className="block mb-2 font-semibold text-gray-700">
@@ -102,7 +112,7 @@ export function RateService({ providers }: RateServiceProps) {
         <p className="font-semibold text-gray-700 mb-2">
           Rating <span className="text-red-500">*</span>
         </p>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3" role="radiogroup" aria-label="Rating">
           {[1, 2, 3, 4, 5].map((val) => (
             <button
               key={val}
@@ -125,7 +135,7 @@ export function RateService({ providers }: RateServiceProps) {
         )}
       </div>
 
-      {/* Comment */}
+      {/* Comments */}
       <div>
         <label htmlFor="comments" className="block mb-2 font-semibold text-gray-700">
           Comments (optional)
