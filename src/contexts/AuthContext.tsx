@@ -1,4 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type User = {
   id: string;
@@ -6,16 +7,17 @@ type User = {
   role: 'admin' | 'user';
   name: string;
   phone: string;
-  region: 'Arusha' | 'Dar es Salaam' | 'Dodoma' | 'Mwanza' | 'Mbeya' | 'Morogoro' | 'Tanga' | 'Kilimanjaro' | 'Zanzibar' | 'Other';
+  region: string;
 };
 
 type AuthContextType = {
   user: User | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     name: string,
     phone: string,
     region: string
@@ -24,8 +26,11 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+// AuthProvider component
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const login = async (email: string, password: string) => {
     const response = await fetch('http://127.0.0.1:8000/api/login', {
@@ -43,11 +48,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json();
     setUser(data.user);
     localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    navigate(data.user.role === 'admin' ? '/admin' : '/dashboard');
   };
 
   const register = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     name: string,
     phone: string,
     region: string
@@ -57,12 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        email, 
-        password, 
+      body: JSON.stringify({
+        email,
+        password,
         name,
         phone,
-        region 
+        region,
       }),
     });
 
@@ -74,54 +81,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json();
     setUser(data.user);
     localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    navigate('/dashboard');
   };
 
   const logout = async () => {
-    await fetch('http://127.0.0.1:8000/api/logout', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    
-    setUser(null);
-    localStorage.removeItem('token');
+    try {
+      await fetch('http://127.0.0.1:8000/api/logout', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+    } finally {
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/');
+    }
   };
 
-  // Check auth state on app load
+  // Check auth state on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const savedUser = localStorage.getItem('user');
+
+    if (token && savedUser) {
       fetch('http://127.0.0.1:8000/api/user', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
-        .then(res => {
-          if (!res.ok) {
-            throw new Error('Failed to fetch user data');
-          }
+        .then((res) => {
+          if (!res.ok) throw new Error('Invalid token');
           return res.json();
         })
-        .then(data => setUser(data))
+        .then((data) => {
+          setUser(data);
+          localStorage.setItem('user', JSON.stringify(data));
+        })
         .catch(() => {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           setUser(null);
-        });
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+// Custom hook
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};
