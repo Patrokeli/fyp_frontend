@@ -49,7 +49,6 @@ export function RateService({ providers }: RateServiceProps) {
         <button
           onClick={resetForm}
           className="mt-2 inline-block px-5 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-          aria-label="Rate another service"
         >
           Rate Another
         </button>
@@ -60,21 +59,22 @@ export function RateService({ providers }: RateServiceProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-lg p-6 space-y-6 lg:space-y-0 lg:flex lg:gap-10"
+      className="max-w-2xl mx-auto bg-white border border-gray-200 rounded-lg shadow-lg p-6 space-y-6"
       noValidate
       aria-live="polite"
     >
-      {/* Left Section */}
-      <div className="lg:w-1/2 space-y-6">
-        <div className="text-center lg:text-left">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">We Value Your Feedback</h1>
-          <p className="text-gray-600 text-sm">
-            Help us improve Fiber services by sharing your thoughts.
-          </p>
-        </div>
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">We Value Your Feedback</h1>
+        <p className="text-gray-600 text-sm">
+          Help us improve Fiber services by sharing your thoughts.
+        </p>
+      </div>
 
-        {/* Provider Selection */}
-        <div>
+      {/* Provider & Rating Side-by-Side on Large Screens */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+        {/* Select Provider */}
+        <div className="flex-1">
           <label htmlFor="provider" className="block mb-2 font-semibold text-gray-700">
             Select Provider <span className="text-red-500">*</span>
           </label>
@@ -106,26 +106,8 @@ export function RateService({ providers }: RateServiceProps) {
           )}
         </div>
 
-        {/* Comments */}
-        <div>
-          <label htmlFor="comments" className="block mb-2 font-semibold text-gray-700">
-            Comments (optional)
-          </label>
-          <textarea
-            id="comments"
-            rows={5}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Share your experience..."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
-          />
-        </div>
-      </div>
-
-      {/* Right Section */}
-      <div className="lg:w-1/2 space-y-6 flex flex-col justify-between">
         {/* Rating */}
-        <div>
+        <div className="flex-1">
           <p className="font-semibold text-gray-700 mb-2">
             Rating <span className="text-red-500">*</span>
           </p>
@@ -151,45 +133,58 @@ export function RateService({ providers }: RateServiceProps) {
             <p className="mt-1 text-sm text-red-600">{errors.rating}</p>
           )}
         </div>
-
-        {/* Submit Button */}
-        <div className="mt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            aria-busy={loading}
-            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-400 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
-          >
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  />
-                </svg>
-                Submitting...
-              </>
-            ) : (
-              'Submit Rating'
-            )}
-          </button>
-        </div>
       </div>
+
+      {/* Comments */}
+      <div>
+        <label htmlFor="comments" className="block mb-2 font-semibold text-gray-700">
+          Comments (optional)
+        </label>
+        <textarea
+          id="comments"
+          rows={4}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Share your experience..."
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
+        />
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={loading}
+        aria-busy={loading}
+        className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-400 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+      >
+        {loading ? (
+          <>
+            <svg
+              className="animate-spin mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              />
+            </svg>
+            Submitting...
+          </>
+        ) : (
+          'Submit Rating'
+        )}
+      </button>
     </form>
   );
 }
