@@ -12,6 +12,7 @@ import { SearchProvider } from './contexts/SearchContext';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { CustomerDashboard } from './components/customer/CustomerDashboard';
 import { useAuth } from './contexts/AuthContext';
 
 function AppContent() {
@@ -45,6 +46,10 @@ function AppContent() {
   if (user?.role === 'admin') {
     return <AdminDashboard />;
   }
+  if (user?.role === 'user') {
+    return <CustomerDashboard />;
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
