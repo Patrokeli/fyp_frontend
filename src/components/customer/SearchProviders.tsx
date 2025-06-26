@@ -14,6 +14,10 @@ export function SearchProviders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 🔧 Added states for feedback section
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState('');
+
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -61,6 +65,14 @@ export function SearchProviders() {
     setError(null);
   };
 
+  // 🔧 Feedback submit handler
+  const handleFeedbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Thanks for your feedback!');
+    setFeedback('');
+    setShowFeedback(false);
+  };
+
   return (
     <div className="p-4">
       {/* Search Form */}
@@ -71,7 +83,6 @@ export function SearchProviders() {
         aria-label="Search for providers by region"
       >
         <div className="flex relative shadow-md rounded-md overflow-hidden border border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition">
-          {/* Search Input */}
           <input
             type="text"
             value={searchLocation}
@@ -85,8 +96,6 @@ export function SearchProviders() {
             aria-label="Region search input"
             autoComplete="off"
           />
-
-          {/* Clear input button (X) */}
           {searchLocation && (
             <button
               type="button"
@@ -97,8 +106,6 @@ export function SearchProviders() {
               <X className="h-5 w-5" />
             </button>
           )}
-
-          {/* Submit button with search icon */}
           <button
             type="submit"
             className="flex items-center justify-center px-5 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 text-white font-semibold transition-colors"
@@ -107,13 +114,9 @@ export function SearchProviders() {
             <Search className="h-5 w-5" />
           </button>
         </div>
-
-        {/* Hidden description for screen readers */}
         <p id="search-desc" className="sr-only">
           Start typing a region name to search for available providers.
         </p>
-
-        {/* Datalist outside for better browser support */}
         <datalist id="regions">
           {availableLocations.map((location) => (
             <option key={location.id} value={location.name} />
@@ -163,6 +166,54 @@ export function SearchProviders() {
           </p>
         </div>
       )}
+
+      {/* ✅ Feedback Section (Always displayed) */}
+      <div className="mt-8 bg-gray-50 p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Did you find what you needed?</h3>
+        <div className="flex items-center space-x-6">
+          <button
+            className="flex items-center px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+            onClick={() => alert('Thank you! Continue to enjoy our fiber network.')}
+            aria-label="Yes, I found what I needed"
+          >
+            👍 Yes
+          </button>
+          <button
+            className="flex items-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-red-400"
+            onClick={() => setShowFeedback(true)}
+            aria-label="No, I didn't find what I needed"
+          >
+            👎 No
+          </button>
+        </div>
+
+        {showFeedback && (
+          <form
+            onSubmit={handleFeedbackSubmit}
+            className="mt-6 space-y-4"
+            aria-label="Feedback form"
+          >
+            <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
+              Help us make this better:
+            </label>
+            <textarea
+              id="feedback"
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Your feedback..."
+              required
+            ></textarea>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Submit Feedback
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
