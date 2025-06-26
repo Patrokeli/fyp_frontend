@@ -14,7 +14,8 @@ import {
   Gift, 
   Star, 
   AlertCircle,
-  Wrench // Replaced Tool with Wrench (similar functionality)
+  Wrench,
+  Search // Add this import
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +45,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" />, path: '/dashboard' },
-    
+    { name: 'Search Providers', icon: <Search className="h-5 w-5" />, path: '/search' },
   ];
 
   return (
