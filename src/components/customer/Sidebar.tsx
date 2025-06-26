@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LogOut, Settings, CreditCard, HelpCircle } from 'lucide-react';
+import { Home, LogOut, Settings, CreditCard, HelpCircle, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,80 +23,81 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    if (onClose) onClose(); // Close sidebar on mobile after navigation
+    if (onClose) onClose();
   };
 
   const navItems = [
-    {
-      name: 'Dashboard',
-      icon: <Home className="h-5 w-5" />,
-      path: '/dashboard',
-    },
-    {
-      name: 'Payments',
-      icon: <CreditCard className="h-5 w-5" />,
-      path: '/payments',
-    },
-    {
-      name: 'Settings',
-      icon: <Settings className="h-5 w-5" />,
-      path: '/settings',
-    },
-    {
-      name: 'Help',
-      icon: <HelpCircle className="h-5 w-5" />,
-      path: '/help',
-    },
+    { name: 'Dashboard', icon: <Home className="h-5 w-5" />, path: '/dashboard' },
+    { name: 'Payments', icon: <CreditCard className="h-5 w-5" />, path: '/payments' },
+    { name: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
+    { name: 'Help', icon: <HelpCircle className="h-5 w-5" />, path: '/help' },
   ];
 
   return (
-    <aside
-      className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:translate-x-0 transition-transform duration-200 ease-in-out`}
-    >
-      <div className="flex flex-col h-full">
-        {/* Sidebar header */}
-        <div className="flex items-center justify-center h-16 px-4 border-b">
-          <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
-        </div>
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
 
-        {/* Navigation items */}
-        <nav className="flex-1 px-4 py-4 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => handleNavigation(item.path)}
-              className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <span className="mr-3">{item.icon}</span>
-              <span>{item.name}</span>
-            </button>
-          ))}
-        </nav>
-
-        {/* User section and logout */}
-        <div className="p-4 border-t">
-          {user && (
-            <div className="flex items-center mb-4">
-              <div className="bg-blue-100 text-blue-800 rounded-full h-10 w-10 flex items-center justify-center">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user.name}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
-              </div>
-            </div>
-          )}
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 right-0 z-50 w-64 h-full bg-white shadow-lg transform ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        } md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Close button (mobile only) */}
           <button
-            onClick={handleLogout}
-            className="flex items-center w-full px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={onClose}
+            className="md:hidden absolute top-4 left-4 text-gray-500 hover:text-gray-700"
           >
-            <LogOut className="h-5 w-5 mr-3" />
-            <span>Logout</span>
+            <X className="h-6 w-6" />
           </button>
+
+          {/* Sidebar content remains the same */}
+          <div className="flex items-center justify-center h-16 px-4 border-b">
+            <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
+          </div>
+
+          <nav className="flex-1 px-4 py-4 space-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.name}
+                onClick={() => handleNavigation(item.path)}
+                className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <span className="mr-3">{item.icon}</span>
+                <span>{item.name}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t">
+            {user && (
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-100 text-blue-800 rounded-full h-10 w-10 flex items-center justify-center">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
