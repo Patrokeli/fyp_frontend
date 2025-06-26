@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
-import { Star, LifeBuoy } from 'lucide-react';
-
-import {
-  Home,
-  LogOut,
-  X,
-  Search,
-} from 'lucide-react';
+import { Star, LifeBuoy, Home, LogOut, X, Search, GitCompare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+
+type Tab = 'dashboard' | 'search' | 'compare' | 'rate' | 'support';
 
 type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void;
-  currentTab: string;
-  changeTab: (tab: 'dashboard' | 'search' | 'compare' | 'rate' | 'support') => void;
-
+  currentTab: Tab;
+  changeTab: (tab: Tab) => void;
 };
 
 export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps) {
@@ -25,31 +19,39 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
     setIsLoggingOut(true);
     try {
       await logout();
-      window.location.href = '/'; // Hard reload to home
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout failed:', error);
       setIsLoggingOut(false);
     }
   };
 
-  const navItems = [
-    { name: 'Dashboard', icon: <Home className="h-5 w-5" aria-hidden="true" />, tab: 'dashboard' },
-    { name: 'Search Providers', icon: <Search className="h-5 w-5" aria-hidden="true" />, tab: 'search' },
-    { name: 'Compare Providers', icon: <Search />, tab: 'compare' },
-      { name: 'Rate Service', icon: <Star className="h-5 w-5" aria-hidden="true" />, tab: 'rate' },        // New
-  { name: 'Support Request', icon: <LifeBuoy className="h-5 w-5" aria-hidden="true" />, tab: 'support' }
-    
+  const navItems: { name: string; icon: JSX.Element; tab: Tab }[] = [
+    { name: 'Dashboard', icon: <Home className="h-5 w-5" />, tab: 'dashboard' },
+    { name: 'Search', icon: <Search className="h-5 w-5" />, tab: 'search' },
+    { name: 'Compare', icon: <GitCompare className="h-5 w-5" />, tab: 'compare' },
+    { name: 'Rate', icon: <Star className="h-5 w-5" />, tab: 'rate' },
+    { name: 'Support', icon: <LifeBuoy className="h-5 w-5" />, tab: 'support' },
   ];
 
   return (
-    <div className="flex flex-col h-full" role="navigation" aria-label="Main Sidebar Navigation">
+    <div
+      className={`flex flex-col h-full bg-gray-900 text-white transition-all duration-300 ${
+        isOpen ? 'w-64' : 'w-0 overflow-hidden'
+      } md:w-64 fixed md:static z-40`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b">
-        <h1 className="text-xl font-semibold text-gray-800">Customer Portal</h1>
+      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-800">
+        <div className="flex items-center">
+          <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center mr-2">
+            <span className="font-bold text-white">CZ</span>
+          </div>
+          <h1 className="text-xl font-bold">Customer Portal</h1>
+        </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded"
+            className="md:hidden text-gray-400 hover:text-white"
             aria-label="Close sidebar"
           >
             <X className="h-6 w-6" />
@@ -58,28 +60,29 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 overflow-y-auto">
         <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = currentTab === item.tab;
+          {navItems.map(({ name, icon, tab }) => {
+            const isActive = currentTab === tab;
             return (
-              <li key={item.name}>
+              <li key={name}>
                 <button
                   onClick={() => {
-                    changeTab(item.tab as 'dashboard' | 'search');
-                    if (onClose) onClose(); // Close sidebar on mobile
+                    changeTab(tab);
+                    onClose?.();
                   }}
-                  className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500'}
-                  `}
+                  className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all
+                    ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <span className={`mr-3 ${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
-                    {item.icon}
+                  <span className={`mr-3 ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                    {icon}
                   </span>
-                  <span>{item.name}</span>
+                  {name}
                 </button>
               </li>
             );
@@ -88,15 +91,18 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-gray-800 bg-gray-800">
         {user && (
           <div className="flex items-center mb-4">
-            <div className="bg-blue-100 text-blue-800 rounded-full h-10 w-10 flex items-center justify-center font-medium select-none">
-              {user.name.charAt(0).toUpperCase()}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold shadow">
+              {user.name?.[0]?.toUpperCase()}
             </div>
             <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium text-gray-700 truncate">{user.name}</p>
-              <p className="text-xs text-gray-500 truncate max-w-[180px]" title={user.email}>
+              <p className="text-sm font-medium text-white truncate">{user.name}</p>
+              <p
+                className="text-xs text-gray-400 truncate max-w-[180px]"
+                title={user.email}
+              >
                 {user.email}
               </p>
             </div>
@@ -104,12 +110,17 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
         )}
         <button
           onClick={handleLogout}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors
+            ${
+              isLoggingOut
+                ? 'text-gray-400 bg-gray-700'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
           disabled={isLoggingOut}
           aria-busy={isLoggingOut}
         >
-          <LogOut className="h-5 w-5 mr-3 text-gray-500" aria-hidden="true" />
-          <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+          <LogOut className={`h-5 w-5 mr-3 ${isLoggingOut ? 'text-gray-500' : 'text-gray-400'}`} />
+          {isLoggingOut ? 'Logging out...' : 'Logout'}
         </button>
       </div>
     </div>
