@@ -16,6 +16,8 @@ import {
   Legend,
 } from 'chart.js';
 
+const API_URL = import.meta.env.VITE_API_URL
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -98,7 +100,7 @@ export function AdminDashboard() {
 
       try {
         // Fetch customers
-        const customersResponse = await fetch('http://127.0.0.1:8000/api/admin/customers', {
+        const customersResponse = await fetch(`${API_URL}/api/admin/customers`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -144,7 +146,7 @@ export function AdminDashboard() {
         setRegionData(regionData);
 
         // Fetch providers
-        const providersResponse = await fetch('http://127.0.0.1:8000/api/admin/providers', {
+        const providersResponse = await fetch(`${API_URL}/api/admin/providers`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

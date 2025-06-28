@@ -13,6 +13,9 @@ type UserType = {
   created_at: string;
 };
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 // List of regions from the database
 const regions = [
   'Arusha', 'Dar es Salaam', 'Dodoma', 'Mwanza', 'Mbeya', 'Morogoro', 'Tanga', 'Kilimanjaro', 'Zanzibar', 'Other'
@@ -57,7 +60,7 @@ export function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:8000/api/admin/customers', {
+      const response = await fetch(`${API_URL}/api/admin/customers`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -131,7 +134,7 @@ export function UserManagement() {
     setSubmitting(true);
     console.log('Submitting set to true');
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/admin/customers', {
+      const response = await fetch(`${API_URL}/api/admin/customers`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -172,7 +175,7 @@ export function UserManagement() {
   const toggleUserRole = async (userId: string, currentRole: 'admin' | 'user' | null) => {
     try {
       setSubmitting(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/customers/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/customers/${userId}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -204,7 +207,7 @@ export function UserManagement() {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/customers/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/customers/${userId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -252,7 +255,7 @@ export function UserManagement() {
 
     setSubmitting(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/customers/${editingUserId}`, {
+      const response = await fetch(`${API_URL}/api/admin/customers/${editingUserId}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
