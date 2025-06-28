@@ -10,3 +10,5 @@ password is admin123
 
 1. Run `npm install`
 2. Run `npm run dev`
+
+remember to point you api VITE_API_URL=....
