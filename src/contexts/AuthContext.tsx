@@ -24,16 +24,17 @@ type AuthContextType = {
   ) => Promise<void>;
 };
 
+const API_URL = import.meta.env.VITE_API_URL;; // ✅ Pull from .env
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('http://127.0.0.1:8000/api/login', {
+    const response = await fetch(`${API_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,18 +60,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone: string,
     region: string
   ) => {
-    const response = await fetch('http://127.0.0.1:8000/api/register', {
+    const response = await fetch(`${API_URL}/api/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email,
-        password,
-        name,
-        phone,
-        region,
-      }),
+      body: JSON.stringify({ email, password, name, phone, region }),
     });
 
     if (!response.ok) {
@@ -87,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch('http://127.0.0.1:8000/api/logout', {
+      await fetch(`${API_URL}/api/logout`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -101,13 +96,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Check auth state on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
 
     if (token && savedUser) {
-      fetch('http://127.0.0.1:8000/api/user', {
+      fetch(`${API_URL}/api/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -138,7 +132,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Custom hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
