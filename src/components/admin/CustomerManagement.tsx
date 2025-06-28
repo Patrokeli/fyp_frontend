@@ -12,6 +12,9 @@ type Customer = {
   created_at: string;
 };
 
+//to fetch from the api
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function CustomerManagement() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +30,7 @@ export function CustomerManagement() {
           throw new Error('No authentication token found');
         }
 
-        const response = await fetch('http://127.0.0.1:8000/api/admin/customers', {
+        const response = await fetch(`${API_URL}/api/admin/customers`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
