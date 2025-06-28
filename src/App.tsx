@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext'; // Add this import
+import { SearchProvider } from './contexts/SearchContext'; // Add this import
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProviderComparison } from './components/ProviderComparison';
@@ -7,15 +10,13 @@ import { HowItWorks } from './components/HowItWorks';
 import { Testimonials } from './components/Testimonials';
 import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
-import { AuthProvider } from './contexts/AuthContext';
-import { SearchProvider } from './contexts/SearchContext';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import { AdminDashboard } from './components/admin/AdminDashboard';
-import { useAuth } from './contexts/AuthContext';
+import { CustomerDashboard } from './components/customer/CustomerDashboard';
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
@@ -23,9 +24,7 @@ function AppContent() {
   const switchToLogin = () => {
     setShowRegister(false);
     setShowLogin(true);
-    
   };
-  
 
   // Function to switch from login to register
   const switchToRegister = () => {
@@ -42,8 +41,15 @@ function AppContent() {
     }
   }, [showLogin, showRegister]);
 
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
   if (user?.role === 'admin') {
     return <AdminDashboard />;
+  }
+  if (user?.role === 'user') {
+    return <CustomerDashboard />;
   }
 
   return (

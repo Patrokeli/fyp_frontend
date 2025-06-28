@@ -1,26 +1,25 @@
 import React, { useState, createContext, useContext } from 'react';
 
-type Location = {
+interface Location {
   id: string;
   name: string;
   providers: string[];
-};
+}
 
-type SearchContextType = {
+interface SearchContextType {
   searchLocation: string;
   setSearchLocation: (location: string) => void;
   availableLocations: Location[];
   searchResults: Location | null;
-  performSearch: (query: string) => void;
-};
+  performSearch: (query: string) => Promise<void>;
+}
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
-export function SearchProvider({ children }: { children: React.ReactNode }) {
+export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchResults, setSearchResults] = useState<Location | null>(null);
   
-  // This could be fetched from your API instead of being hardcoded
   const [availableLocations] = useState<Location[]>([
     {
       id: '1',
@@ -45,16 +44,33 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   ]);
 
   const performSearch = async (query: string) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/search?location=${query}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    
-    if (response.ok) {
-      const results = await response.json();
-      setSearchResults(results);
-    } else {
+    try {
+      // Simulate API call with timeout
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const foundLocation = availableLocations.find(location => 
+        location.name.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      setSearchResults(foundLocation || null);
+      
+      // For actual API call, you would use:
+      /*
+      const response = await fetch(`http://127.0.0.1:8000/api/search?location=${query}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      } else {
+        setSearchResults(null);
+      }
+      */
+    } catch (error) {
+      console.error('Search failed:', error);
       setSearchResults(null);
     }
   };
@@ -70,9 +86,8 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SearchContext.Provider>
   );
-}
+};
 
-// Properly export the useSearch hook
 export function useSearch() {
   const context = useContext(SearchContext);
   if (context === undefined) {

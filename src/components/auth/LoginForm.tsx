@@ -16,19 +16,21 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!agree) {
-      setError('You must agree to the Terms & Privacy');
-      return;
-    }
-    try {
-      await login(email, password);
-      onSuccess?.();
-      onClose();
-    } catch (err) {
-      setError('Invalid credentials');
-    }
-  };
+  e.preventDefault();
+  if (!agree) {
+    setError('You must agree to the Terms & Privacy');
+    return;
+  }
+  try {
+    await login(email, password);
+    // Add this line to force state refresh:
+    window.location.reload(); // Or better: navigate('/dashboard');
+    onSuccess?.();
+    onClose();
+  } catch (err) {
+    setError('Invalid credentials');
+  }
+};
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
