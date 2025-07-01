@@ -7,6 +7,7 @@ import { SearchProviders } from './SearchProviders';
 import { ProviderComparison } from './ProviderComparison';
 import { RateService } from './RateService';
 import { SupportRequest } from './SupportRequest';
+import { QuickActionCard } from './QuickActionCard';
 
 // Particle background component
 const ParticleBackground = () => {
@@ -258,26 +259,33 @@ export function CustomerDashboard() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {quickActions.map((action, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentTab(action.tab as any)}
-                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center">
-                          <div className="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">
-                            {action.icon}
-                          </div>
-                          <span className="font-medium text-gray-800">{action.title}</span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-4 tracking-tight">Quick Actions</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  
+                  <QuickActionCard
+                      title="Compare Providers"
+                      description="Evaluate and compare internet providers"
+                      icon={<GitCompare size={28} />}
+                      color="bg-blue-500"
+                      onClick={() => setCurrentTab('compare')}
+                    />
+                    <QuickActionCard
+                      title="Rate Service"
+                      description="Share feedback on your provider"
+                      icon={<Star size={28} />}
+                      color="bg-green-500"
+                      onClick={() => setCurrentTab('rate')}
+                    />
+                    <QuickActionCard
+                      title="Need Support"
+                      description="Reach out for assistance"
+                      icon={<LifeBuoy size={28} />}
+                      color="bg-purple-500"
+                      onClick={() => setCurrentTab('support')}
+                    />
+                  </div>`
+
 
                 {/* Recent Activity */}
                 <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
