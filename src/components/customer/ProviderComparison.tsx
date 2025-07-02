@@ -23,7 +23,7 @@ const providers: Provider[] = [
     contract: '12-month contract',
     coverage: '15 regions',
     rating: 4.2,
-    actionUrl: '#',
+    actionUrl: 'https://fiber.ttcl.co.tz/application/#/home',
   },
   {
     id: '2',
@@ -34,7 +34,7 @@ const providers: Provider[] = [
     contract: 'No contract required',
     coverage: '10 regions',
     rating: 4.6,
-    actionUrl: '#',
+    actionUrl: 'https://www.liquidhome.co.tz/products-and-services/packages/fibre',
   },
   {
     id: '3',
@@ -45,7 +45,7 @@ const providers: Provider[] = [
     contract: '6-month renewable',
     coverage: '8 regions',
     rating: 3.8,
-    actionUrl: '#',
+    actionUrl: 'https://zuku.co.tz/fiber/',
   },
   {
     id: '4',
@@ -67,7 +67,7 @@ const providers: Provider[] = [
     contract: '12-month contract',
     coverage: '5 regions',
     rating: 4.3,
-    actionUrl: '#',
+    actionUrl: 'https://yas.co.tz/consumer/home-plans/fiber-home/',
   },
   {
     id: '6',
@@ -78,7 +78,7 @@ const providers: Provider[] = [
     contract: 'No contract',
     coverage: '4 regions',
     rating: 3.9,
-    actionUrl: '#',
+    actionUrl: 'https://www.simbanet.net/',
   },
   {
     id: '7',
@@ -89,7 +89,7 @@ const providers: Provider[] = [
     contract: 'Monthly plan',
     coverage: '3 regions',
     rating: 3.7,
-    actionUrl: '#',
+    actionUrl: 'https://savannafibre.co.tz/',
   },
 ];
 
