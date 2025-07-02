@@ -5,7 +5,7 @@ import {
   LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Briefcase
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, Pie } from 'react-chartjs-2';  // Added Pie import
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,6 +13,7 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,  // Registered ArcElement for Pie chart
   Title,
   Tooltip,
   Legend,
@@ -26,6 +27,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,  // <-- Added ArcElement for Pie chart
   Title,
   Tooltip,
   Legend
@@ -276,7 +278,7 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
         data: registrationData.map((d: any) => d.count),
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        tension: 0.4,
+        tension: 0,  // Changed from 0.4 to 0 for zig-zag lines
         fill: true,
       },
     ],
@@ -293,18 +295,41 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
     ],
   };
 
+  const pieChartData = {
+    labels: regionData.map((r: any) => r.region),
+    datasets: [
+      {
+        label: 'Users by Region',
+        data: regionData.map((r: any) => r.count),
+        backgroundColor: [
+          '#10B981',
+          '#3B82F6',
+          '#F59E0B',
+          '#EF4444',
+          '#8B5CF6',
+          '#EC4899',
+          '#14B8A6',
+          '#F97316',
+        ],
+      },
+    ],
+  };
+
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         <StatCard icon={Users} title="Total Users" value={stats.totalUsers} colors={colors} />
         <StatCard icon={Briefcase} title="Total Providers" value={stats.totalProviders} colors={colors} />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className={`p-4 rounded-lg ${colors.card} ${colors.border} border`}>
           <Line data={lineChartData} />
         </div>
         <div className={`p-4 rounded-lg ${colors.card} ${colors.border} border`}>
           <Bar data={barChartData} />
+        </div>
+        <div className={`p-4 rounded-lg ${colors.card} ${colors.border} border`}>
+          <Pie data={pieChartData} />
         </div>
       </div>
     </div>
