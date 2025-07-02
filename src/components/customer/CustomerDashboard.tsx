@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSearch } from '../../contexts/SearchContext';
-import { Search, Menu, Bell, HelpCircle, ChevronRight, Activity, AlertCircle, Star, LifeBuoy, GitCompare } from 'lucide-react';
-import { SearchProviders } from './SearchProviders'; 
+import {
+  Search, Menu, Bell, HelpCircle, ChevronRight, Activity,
+  AlertCircle, Star, LifeBuoy, GitCompare
+} from 'lucide-react';
+
+import { SearchProviders } from './SearchProviders';
 import { ProviderComparison } from './ProviderComparison';
 import { RateService } from './RateService';
 import { SupportRequest } from './SupportRequest';
 import { QuickActionCard } from './QuickActionCard';
+import { UserHelp } from './UserHelp';
 
 // Particle background component
 const ParticleBackground = () => {
@@ -21,14 +26,7 @@ const ParticleBackground = () => {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const particles: {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
-    }[] = [];
+    const particles = [];
     const particleCount = 30;
 
     for (let i = 0; i < particleCount; i++) {
@@ -44,25 +42,21 @@ const ParticleBackground = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        
-        // Update positions
         p.x += p.speedX;
         p.y += p.speedY;
-        
-        // Bounce off edges
+
         if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
         if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-        
-        // Draw particle
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
         ctx.fill();
       }
-      
+
       requestAnimationFrame(animate);
     };
 
@@ -89,21 +83,16 @@ const ParticleBackground = () => {
 
 export function CustomerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search' | 'compare' | 'rate' | 'support'>('dashboard');
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'search' | 'compare' | 'rate' | 'support' | 'help'>('dashboard');
 
   const { user } = useAuth();
-  const {
-    searchLocation,
-    setSearchLocation,
-    performSearch
-  } = useSearch();
+  const { searchLocation, setSearchLocation, performSearch } = useSearch();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     performSearch(searchLocation);
   };
 
-  // Mock data for dashboard
   const dashboardStats = [
     { title: "Active Services", value: 3, change: "+2 from last week", icon: <Activity className="h-5 w-5" />, color: "blue" },
     { title: "Pending Requests", value: 1, change: "1 awaiting approval", icon: <AlertCircle className="h-5 w-5" />, color: "orange" },
@@ -114,24 +103,27 @@ export function CustomerDashboard() {
   const quickActions = [
     { title: "Compare Providers", icon: <GitCompare className="h-5 w-5" />, tab: "compare" },
     { title: "Rate Service", icon: <Star className="h-5 w-5" />, tab: "rate" },
-    { title: "Need Support", icon: <LifeBuoy className="h-5 w-5" />, tab: "support" }
+    { title: "Need Support", icon: <LifeBuoy className="h-5 w-5" />, tab: "support" },
+    { title: "Help Center", icon: <HelpCircle className="h-5 w-5" />, tab: "help" }
   ];
+
+  const tabTitles: Record<string, string> = {
+    dashboard: 'Dashboard',
+    search: 'Search Providers',
+    compare: 'Compare Providers',
+    rate: 'Rate Service',
+    support: 'Support',
+    help: 'Help Center'
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden">
-      {/* Particle Background Animation */}
       <ParticleBackground />
 
-      {/* Desktop Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0 z-10">
-        <Sidebar
-          isOpen={true}
-          currentTab={currentTab}
-          changeTab={setCurrentTab}
-        />
+        <Sidebar isOpen={true} currentTab={currentTab} changeTab={setCurrentTab} />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
@@ -152,12 +144,10 @@ export function CustomerDashboard() {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-        {/* Top Navigation Bar */}
+        {/* Header */}
         <header className="bg-white shadow-sm z-30 border-b border-gray-200">
           <div className="flex items-center justify-between px-6 py-3">
-            {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -167,34 +157,31 @@ export function CustomerDashboard() {
                 <Menu className="h-6 w-6" />
               </button>
               <h1 className="text-lg font-semibold text-gray-800">
-                {currentTab === 'dashboard' && 'Dashboard'}
-                {currentTab === 'search' && 'Search Providers'}
-                {currentTab === 'compare' && 'Compare Providers'}
-                {currentTab === 'rate' && 'Rate Service'}
-                {currentTab === 'support' && 'Support'}
+                {tabTitles[currentTab]}
               </h1>
             </div>
 
-            {/* Desktop Search and User Area */}
             <div className="hidden md:flex md:items-center md:space-x-6">
-              <form onSubmit={handleSearch} className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                />
-              </form>
-              
+              {currentTab !== 'help' && (
+                <form onSubmit={handleSearch} className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
+                  />
+                </form>
+              )}
+
               <button className="p-1 text-gray-500 hover:text-gray-700 rounded-full relative">
                 <Bell className="h-6 w-6" />
                 <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
               </button>
-              
+
               {user && (
                 <div className="flex items-center space-x-2">
                   <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm">
@@ -207,35 +194,35 @@ export function CustomerDashboard() {
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            {/* Dashboard Welcome Section */}
+            {/* Dashboard View */}
             {currentTab === 'dashboard' && (
               <div className="space-y-6">
                 {/* Welcome Card */}
                 <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
                   {user && (
-                    <div>
+                    <>
                       <h1 className="text-2xl font-bold text-gray-800 mb-2">
                         Welcome back, {user.name}!
                       </h1>
                       <p className="text-gray-600">
                         Here's what's happening with your services today.
                       </p>
-                    </div>
+                    </>
                   )}
                 </div>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {dashboardStats.map((stat, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className={`bg-white rounded-xl shadow-sm p-5 border-l-4 backdrop-blur-sm bg-opacity-90 ${
-                        stat.color === 'blue' ? 'border-blue-500' : 
-                        stat.color === 'orange' ? 'border-orange-500' : 
-                        stat.color === 'purple' ? 'border-purple-500' : 
+                        stat.color === 'blue' ? 'border-blue-500' :
+                        stat.color === 'orange' ? 'border-orange-500' :
+                        stat.color === 'purple' ? 'border-purple-500' :
                         'border-green-500'
                       }`}
                     >
@@ -245,12 +232,12 @@ export function CustomerDashboard() {
                           <p className="text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
                           <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
                         </div>
-                        <div className={`h-10 w-10 rounded-full ${
-                          stat.color === 'blue' ? 'bg-blue-100 text-blue-600' : 
-                          stat.color === 'orange' ? 'bg-orange-100 text-orange-600' : 
-                          stat.color === 'purple' ? 'bg-purple-100 text-purple-600' : 
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                          stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                          stat.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                          stat.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                           'bg-green-100 text-green-600'
-                        } flex items-center justify-center`}>
+                        }`}>
                           {stat.icon}
                         </div>
                       </div>
@@ -260,32 +247,28 @@ export function CustomerDashboard() {
 
                 {/* Quick Actions */}
                 <h2 className="text-xl font-bold text-gray-800 mb-4 tracking-tight">Quick Actions</h2>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  
-                  <QuickActionCard
-                      title="Compare Providers"
-                      description="Evaluate and compare internet providers"
-                      icon={<GitCompare size={28} />}
-                      color="bg-blue-500"
-                      onClick={() => setCurrentTab('compare')}
-                    />
+                  {quickActions.map((action, idx) => (
                     <QuickActionCard
-                      title="Rate Service"
-                      description="Share feedback on your provider"
-                      icon={<Star size={28} />}
-                      color="bg-green-500"
-                      onClick={() => setCurrentTab('rate')}
+                      key={idx}
+                      title={action.title}
+                      description={
+                        action.tab === 'compare' ? "Evaluate and compare internet providers" :
+                        action.tab === 'rate' ? "Share feedback on your provider" :
+                        action.tab === 'support' ? "Reach out for assistance" :
+                        "Get help using the system"
+                      }
+                      icon={action.icon}
+                      color={
+                        action.tab === 'compare' ? "bg-blue-500" :
+                        action.tab === 'rate' ? "bg-green-500" :
+                        action.tab === 'support' ? "bg-purple-500" :
+                        "bg-gray-600"
+                      }
+                      onClick={() => setCurrentTab(action.tab as any)}
                     />
-                    <QuickActionCard
-                      title="Need Support"
-                      description="Reach out for assistance"
-                      icon={<LifeBuoy size={28} />}
-                      color="bg-purple-500"
-                      onClick={() => setCurrentTab('support')}
-                    />
-                  </div>`
-
+                  ))}
+                </div>
 
                 {/* Recent Activity */}
                 <div className="bg-white rounded-xl shadow-sm p-6 backdrop-blur-sm bg-opacity-90">
@@ -308,31 +291,28 @@ export function CustomerDashboard() {
               </div>
             )}
 
-            {/* Tab Content */}
+            {/* Other Tabs */}
             {currentTab !== 'dashboard' && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden backdrop-blur-sm bg-opacity-90">
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden backdrop-blur-sm bg-opacity-90 p-6">
                 {currentTab === 'search' && <SearchProviders />}
                 {currentTab === 'compare' && <ProviderComparison />}
                 {currentTab === 'rate' && (
-                  <RateService
-                    providers={[
-                      { id: '1', name: 'Zuku' },
-                      { id: '2', name: 'TTCL' },
-                      { id: '3', name: 'SimbaNet' },
-                      { id: '4', name: 'YAS Fiber' },
-                    ]}
-                  />
+                  <RateService providers={[
+                    { id: '1', name: 'Zuku' },
+                    { id: '2', name: 'TTCL' },
+                    { id: '3', name: 'SimbaNet' },
+                    { id: '4', name: 'YAS Fiber' }
+                  ]} />
                 )}
                 {currentTab === 'support' && (
-                  <SupportRequest
-                    providers={[
-                      { id: '1', name: 'Zuku' },
-                      { id: '2', name: 'TTCL' },
-                      { id: '3', name: 'SimbaNet' },
-                      { id: '4', name: 'YAS Fiber' },
-                    ]}
-                  />
+                  <SupportRequest providers={[
+                    { id: '1', name: 'Zuku' },
+                    { id: '2', name: 'TTCL' },
+                    { id: '3', name: 'SimbaNet' },
+                    { id: '4', name: 'YAS Fiber' }
+                  ]} />
                 )}
+                {currentTab === 'help' && <UserHelp />}
               </div>
             )}
           </div>
