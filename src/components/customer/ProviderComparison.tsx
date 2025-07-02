@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, Wifi } from 'lucide-react';
+import { Filter, Wifi, Globe, Wrench, Rocket, BadgeDollarSign, FileText } from 'lucide-react';
 
 type Provider = {
   id: string;
@@ -97,26 +97,20 @@ export function ProviderComparison() {
   const [speedFilter, setSpeedFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
 
-  const parseSpeed = (speedStr: string) =>
-    parseInt(speedStr.replace(/[^\d]/g, '') || '0', 10);
-  const parsePrice = (priceStr: string) =>
-    parseInt(priceStr.replace(/[^\d]/g, '') || '0', 10);
+  const parseSpeed = (s: string) => parseInt(s.replace(/[^\d]/g, '') || '0', 10);
+  const parsePrice = (p: string) => parseInt(p.replace(/[^\d]/g, '') || '0', 10);
 
-  const filteredProviders = providers.filter((provider) => {
-    const maxSpeed = Math.max(...provider.speeds.map(parseSpeed));
-    const minPrice = Math.min(...provider.prices.map(parsePrice));
-    const matchesSpeed = speedFilter === 'all' || maxSpeed >= parseInt(speedFilter);
-    const matchesPrice = priceFilter === 'all' || minPrice <= parseInt(priceFilter);
-    return matchesSpeed && matchesPrice;
+  const filtered = providers.filter((p) => {
+    const speed = Math.max(...p.speeds.map(parseSpeed));
+    const price = Math.min(...p.prices.map(parsePrice));
+    return (
+      (speedFilter === 'all' || speed >= parseInt(speedFilter)) &&
+      (priceFilter === 'all' || price <= parseInt(priceFilter))
+    );
   });
 
-  const handleResetFilters = () => {
-    setSpeedFilter('all');
-    setPriceFilter('all');
-  };
-
   return (
-    <div className="bg-gray-50 p-6 rounded-xl shadow">
+    <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
       {/* Filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h2 className="text-xl font-bold text-gray-700">Compare Fiber Providers</h2>
@@ -125,7 +119,7 @@ export function ProviderComparison() {
             <label htmlFor="speedFilter" className="text-sm mr-2">Speed:</label>
             <select
               id="speedFilter"
-              className="text-sm border border-gray-300 rounded px-2 py-1"
+              className="text-sm border rounded px-2 py-1"
               value={speedFilter}
               onChange={(e) => setSpeedFilter(e.target.value)}
             >
@@ -141,7 +135,7 @@ export function ProviderComparison() {
             <label htmlFor="priceFilter" className="text-sm mr-2">Price:</label>
             <select
               id="priceFilter"
-              className="text-sm border border-gray-300 rounded px-2 py-1"
+              className="text-sm border rounded px-2 py-1"
               value={priceFilter}
               onChange={(e) => setPriceFilter(e.target.value)}
             >
@@ -153,8 +147,11 @@ export function ProviderComparison() {
             </select>
           </div>
           <button
+            onClick={() => {
+              setSpeedFilter('all');
+              setPriceFilter('all');
+            }}
             className="flex items-center text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded"
-            onClick={handleResetFilters}
           >
             <Filter size={14} className="mr-1" />
             Reset
@@ -162,60 +159,56 @@ export function ProviderComparison() {
         </div>
       </div>
 
-      {/* Provider Cards */}
-      {filteredProviders.length > 0 ? (
+      {/* Cards */}
+      {filtered.length ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProviders.map((provider) => (
+          {filtered.map((p) => (
             <div
-              key={provider.id}
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-all"
+              key={p.id}
+              className="bg-white border rounded-xl p-5 shadow hover:shadow-lg transition-all"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <Wifi className="h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-semibold text-gray-800">{provider.name}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Wifi className="text-blue-600" size={20} />
+                  <h3 className="text-lg font-bold text-gray-800">{p.name}</h3>
+                </div>
+                <span className="text-sm text-yellow-600 font-semibold">{p.rating}/5</span>
               </div>
 
-              <div className="space-y-1 text-sm text-gray-600">
-                <p><span className="font-medium">Speed:</span> {provider.speeds[0]}</p>
-                <p><span className="font-medium">Price:</span> {provider.prices[0]}</p>
-                <p><span className="font-medium">Coverage:</span> {provider.coverage}</p>
-                <p><span className="font-medium">Contract:</span> {provider.contract}</p>
-                <p><span className="font-medium">Installation:</span> {provider.installation}</p>
-              </div>
+              <ul className="text-sm text-gray-600 space-y-2 mt-4">
+                <li className="flex items-start gap-2">
+                  <Rocket className="text-blue-500" size={16} /> <span><strong>Speed:</strong> {p.speeds[0]}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <BadgeDollarSign className="text-green-600" size={16} /> <span><strong>Price:</strong> {p.prices[0]}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FileText className="text-purple-500" size={16} /> <span><strong>Contract:</strong> {p.contract}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Globe className="text-indigo-500" size={16} /> <span><strong>Coverage:</strong> {p.coverage}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Wrench className="text-orange-500" size={16} /> <span><strong>Installation:</strong> {p.installation}</span>
+                </li>
+              </ul>
 
               {/* Badges */}
-              <div className="mt-2 flex gap-2 flex-wrap">
-                {provider.installation.toLowerCase().includes('free') && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {p.installation.toLowerCase().includes('free') && (
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free Installation</span>
                 )}
-                {provider.contract.toLowerCase().includes('no contract') && (
+                {p.contract.toLowerCase().includes('no contract') && (
                   <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">No Contract</span>
                 )}
               </div>
 
-              {/* Rating */}
-              <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-yellow-600 mr-2">{provider.rating}/5</span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      className={`w-4 h-4 ${i < Math.floor(provider.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921...z" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-
-              {/* Call to Action */}
+              {/* CTA */}
               <a
-                href={provider.actionUrl}
+                href={p.actionUrl}
+                className="mt-4 block text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium transition"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded text-sm transition"
               >
                 Request Installation
               </a>
@@ -223,9 +216,7 @@ export function ProviderComparison() {
           ))}
         </div>
       ) : (
-        <div className="text-center text-gray-500 py-6">
-          No providers match your filters.
-        </div>
+        <div className="text-center text-gray-500 py-8">No providers match your filters.</div>
       )}
     </div>
   );
