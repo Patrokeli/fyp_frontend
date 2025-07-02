@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
-import { LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, UserPlus, Briefcase } from 'lucide-react';
+import {
+  LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Briefcase
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -16,9 +18,8 @@ import {
   Legend,
 } from 'chart.js';
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL;
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -30,7 +31,7 @@ ChartJS.register(
   Legend
 );
 
-type TabType = 'dashboard' | 'providers' | 'users';
+type Tab = 'dashboard' | 'providers' | 'users';
 
 const colorSchemes = {
   light: {
@@ -70,13 +71,10 @@ const colorSchemes = {
 };
 
 export function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalProviders: 0,
-  });
+  const [stats, setStats] = useState({ totalUsers: 0, totalProviders: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registrationData, setRegistrationData] = useState<any[]>([]);
@@ -85,97 +83,67 @@ export function AdminDashboard() {
 
   const colors = isDarkMode ? colorSchemes.dark : colorSchemes.light;
 
-  // Fetch data from Laravel API
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-
       const token = localStorage.getItem('token');
+
       if (!token) {
-        setError('No authentication token found. Please log in.');
+        setError('No authentication token found.');
         setIsLoading(false);
         return;
       }
 
       try {
         // Fetch customers
-        const customersResponse = await fetch(`${API_URL}/api/admin/customers`, {
-          method: 'GET',
+        const customerRes = await fetch(`${API_URL}/api/admin/customers`, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
             Accept: 'application/json',
           },
         });
 
-        if (!customersResponse.ok) {
-          throw new Error(`Failed to fetch customers: ${customersResponse.status} ${customersResponse.statusText}`);
-        }
+        const customers = await customerRes.json();
+        const totalUsers = Array.isArray(customers) ? customers.length : 0;
 
-        const customersData = await customersResponse.json();
-        console.log('Customers API Response:', customersData);
-        const totalUsers = Array.isArray(customersData) ? customersData.length : 0;
-
-        // Process registration data (group by month)
-        const registrationMap = new Map<string, number>();
-        customersData.forEach((user: any) => {
+        // Group registrations by month
+        const regMap = new Map<string, number>();
+        customers.forEach((user: any) => {
           const date = new Date(user.created_at);
-          const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
-          registrationMap.set(monthYear, (registrationMap.get(monthYear) || 0) + 1);
+          const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+          regMap.set(key, (regMap.get(key) || 0) + 1);
         });
 
-        const sortedRegistrationData = Array.from(registrationMap.entries())
-          .map(([monthYear, count]) => ({ monthYear, count }))
-          .sort((a, b) => a.monthYear.localeCompare(b.monthYear));
+        setRegistrationData(
+          Array.from(regMap.entries())
+            .map(([monthYear, count]) => ({ monthYear, count }))
+            .sort((a, b) => a.monthYear.localeCompare(b.monthYear))
+        );
 
-        setRegistrationData(sortedRegistrationData);
-
-        // Process regional distribution
+        // Group by region
         const regionMap = new Map<string, number>();
-        customersData.forEach((user: any) => {
+        customers.forEach((user: any) => {
           const region = user.region || 'Unknown';
           regionMap.set(region, (regionMap.get(region) || 0) + 1);
         });
 
-        const regionData = Array.from(regionMap.entries()).map(([region, count]) => ({
-          region,
-          count,
-        }));
-
-        setRegionData(regionData);
+        setRegionData(Array.from(regionMap.entries()).map(([region, count]) => ({ region, count })));
 
         // Fetch providers
-        const providersResponse = await fetch(`${API_URL}/api/admin/providers`, {
-          method: 'GET',
+        const providerRes = await fetch(`${API_URL}/api/admin/providers`, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
             Accept: 'application/json',
           },
         });
 
-        if (!providersResponse.ok) {
-          throw new Error(`Failed to fetch providers: ${providersResponse.status} ${providersResponse.statusText}`);
-        }
+        const providers = await providerRes.json();
+        const totalProviders = Array.isArray(providers) ? providers.length : 0;
 
-        const providersData = await providersResponse.json();
-        console.log('Providers API Response:', providersData);
-        const totalProviders = Array.isArray(providersData) ? providersData.length : 0;
-
-        setStats({
-          totalUsers,
-          totalProviders,
-        });
-      } catch (error: any) {
-        console.error('Error fetching data:', error);
-        setError(error.message || 'Failed to load data. Please try again later.');
-        setStats({
-          totalUsers: 0,
-          totalProviders: 0,
-        });
-        setRegistrationData([]);
-        setRegionData([]);
+        setStats({ totalUsers, totalProviders });
+      } catch (err: any) {
+        setError(err.message || 'Error fetching data.');
       } finally {
         setIsLoading(false);
       }
@@ -184,33 +152,28 @@ export function AdminDashboard() {
     fetchData();
   }, []);
 
-  // Dark mode handling
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-    setIsDarkMode(shouldBeDark);
-    document.documentElement.classList.toggle('dark', shouldBeDark);
+    const useDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    setIsDarkMode(useDark);
+    document.documentElement.classList.toggle('dark', useDark);
   }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem('theme', newMode ? 'dark' : 'light');
-      return newMode;
+    setIsDarkMode(prev => {
+      const next = !prev;
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      return next;
     });
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const changeTab = (tab: TabType) => {
+  const changeTab = (tab: Tab) => {
     setActiveTab(tab);
     setIsSidebarOpen(false);
   };
@@ -219,72 +182,28 @@ export function AdminDashboard() {
     <div className={`min-h-screen flex ${colors.background}`}>
       {/* Sidebar */}
       <aside
-        className={`w-64 h-screen fixed top-0 left-0 shadow-lg flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`w-64 h-screen fixed top-0 left-0 z-50 shadow-md transform transition-transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 ${colors.sidebar} ${colors.border} border-r`}
       >
-        <div className={`p-4 border-b flex items-center justify-between ${colors.border}`}>
-          <span className={`font-bold text-xl ${colors.textAccent}`}>
-            Admin Dashboard
-          </span>
-          <button
-            onClick={toggleSidebar}
-            className={`md:hidden ${colors.textSecondary} hover:text-gray-900 dark:hover:text-gray-100`}
-            aria-label="Close Sidebar"
-          >
-            <X className="h-6 w-6" />
+        <div className={`p-4 border-b flex justify-between items-center ${colors.border}`}>
+          <span className={`font-bold text-xl ${colors.textAccent}`}>Admin</span>
+          <button onClick={toggleSidebar} className="md:hidden" aria-label="Close Sidebar">
+            <X className="h-6 w-6 text-gray-400" />
           </button>
         </div>
-
-        <nav className="flex-1 mt-4">
-          <button
-            onClick={() => changeTab('dashboard')}
-            className={`w-full flex items-center px-4 py-3 text-left font-medium transition-colors duration-200 ${
-              activeTab === 'dashboard'
-                ? `${colors.activeBg} text-white border-l-4 ${colors.accentBorder}`
-                : `${colors.textSecondary} ${colors.hoverBg} ${colors.buttonHover}`
-            }`}
-            aria-current={activeTab === 'dashboard' ? 'page' : undefined}
-          >
-            <Home className="h-5 w-5 mr-3" />
-            Dashboard
-          </button>
-
-          <button
-            onClick={() => changeTab('providers')}
-            className={`w-full flex items-center px-4 py-3 text-left font-medium transition-colors duration-200 ${
-              activeTab === 'providers'
-                ? `${colors.activeBg} text-white border-l-4 ${colors.accentBorder}`
-                : `${colors.textSecondary} ${colors.hoverBg} ${colors.buttonHover}`
-            }`}
-            aria-current={activeTab === 'providers' ? 'page' : undefined}
-          >
-            <LayoutGrid className="h-5 w-5 mr-3" />
-            Providers
-          </button>
-
-          <button
-            onClick={() => changeTab('users')}
-            className={`w-full flex items-center px-4 py-3 text-left font-medium transition-colors duration-200 ${
-              activeTab === 'users'
-                ? `${colors.activeBg} text-white border-l-4 ${colors.accentBorder}`
-                : `${colors.textSecondary} ${colors.hoverBg} ${colors.buttonHover}`
-            }`}
-            aria-current={activeTab === 'users' ? 'page' : undefined}
-          >
-            <Users className="h-5 w-5 mr-3" />
-            Users
-          </button>
+        <nav className="flex flex-col mt-4">
+          <SidebarButton icon={Home} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => changeTab('dashboard')} colors={colors} />
+          <SidebarButton icon={LayoutGrid} label="Providers" isActive={activeTab === 'providers'} onClick={() => changeTab('providers')} colors={colors} />
+          <SidebarButton icon={Users} label="Users" isActive={activeTab === 'users'} onClick={() => changeTab('users')} colors={colors} />
         </nav>
-
-        <div className={`p-4 border-t ${colors.border}`}>
+        <div className={`mt-auto p-4 border-t ${colors.border}`}>
           <button
             onClick={() => {
               logout();
               setIsSidebarOpen(false);
             }}
-            className={`w-full flex items-center px-4 py-3 text-left ${colors.textSecondary} ${colors.logoutHover} transition-colors duration-200`}
-            aria-label="Logout"
+            className={`flex items-center px-4 py-2 w-full rounded-lg text-left ${colors.logoutHover}`}
           >
             <LogOut className="h-5 w-5 mr-3" />
             Logout
@@ -292,42 +211,31 @@ export function AdminDashboard() {
         </div>
       </aside>
 
-      <div className={`flex-1 md:ml-64 ${colors.background}`}>
-        <header className={`sticky top-0 z-40 shadow ${colors.header} ${colors.border} border-b`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between space-x-6">
-            <button
-              onClick={toggleSidebar}
-              className={`md:hidden ${colors.textSecondary} hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none`}
-              aria-label="Open Sidebar"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-
-            <h1 className={`text-2xl font-bold ${colors.textPrimary}`}>
-              {activeTab === 'dashboard' ? 'Dashboard' : activeTab === 'providers' ? 'Providers' : 'Users'}
-            </h1>
-
-            <button
-              onClick={toggleDarkMode}
-              className={`p-2 rounded-full ${
-                isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              } focus:outline-none transition-colors duration-200`}
-              aria-label="Toggle Dark Mode"
-            >
-              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
-          </div>
+      {/* Main content */}
+      <div className={`flex-1 md:ml-64`}>
+        <header className={`sticky top-0 z-40 flex items-center justify-between p-4 shadow ${colors.header} ${colors.border} border-b`}>
+          <button onClick={toggleSidebar} className="md:hidden">
+            <Menu className="h-6 w-6 text-gray-400" />
+          </button>
+          <h1 className={`text-xl font-semibold ${colors.textPrimary}`}>
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+          </h1>
+          <button
+            onClick={toggleDarkMode}
+            className={`p-2 rounded-full ${
+              isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
         </header>
 
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <section
-            className={`rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out ${colors.card} ${colors.border} border`}
-            aria-live="polite"
-          >
+        <main className="max-w-7xl mx-auto py-6 px-4">
+          <section className={`rounded-lg shadow p-6 ${colors.card} ${colors.border} border`}>
             {isLoading && <p className={colors.textPrimary}>Loading...</p>}
-            {error && <p className={`text-red-500 ${colors.textPrimary}`}>{error}</p>}
+            {error && <p className="text-red-500">{error}</p>}
             {!isLoading && !error && activeTab === 'dashboard' && (
-              <DashboardContent stats={stats} colors={colors} registrationData={registrationData} regionData={regionData} />
+              <DashboardContent stats={stats} registrationData={registrationData} regionData={regionData} colors={colors} />
             )}
             {activeTab === 'providers' && <ProviderManagement />}
             {activeTab === 'users' && <UserManagement />}
@@ -339,146 +247,72 @@ export function AdminDashboard() {
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={toggleSidebar}
-          role="dialog"
-          aria-label="Close Sidebar Overlay"
         />
       )}
     </div>
   );
 }
 
-// Dashboard Content Component
-const DashboardContent = ({ stats, colors, registrationData, regionData }: { stats: any; colors: any; registrationData: any[]; regionData: { region: string; count: number }[] }) => {
-  // Line chart data
+// Sidebar Button
+const SidebarButton = ({ icon: Icon, label, isActive, onClick, colors }: any) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center px-4 py-3 text-left w-full transition-colors ${
+      isActive ? `${colors.activeBg} text-white border-l-4 ${colors.accentBorder}` : `${colors.textSecondary} ${colors.hoverBg} ${colors.buttonHover}`
+    }`}
+  >
+    <Icon className="h-5 w-5 mr-3" />
+    {label}
+  </button>
+);
+
+// Dashboard Content
+const DashboardContent = ({ stats, registrationData, regionData, colors }: any) => {
   const lineChartData = {
-    labels: registrationData.map((data) => data.monthYear),
+    labels: registrationData.map((d: any) => d.monthYear),
     datasets: [
       {
         label: 'Registrations',
-        data: registrationData.map((data) => data.count),
-        borderColor: '#3B82F6', // Blue
+        data: registrationData.map((d: any) => d.count),
+        borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        fill: true,
         tension: 0.4,
+        fill: true,
       },
     ],
   };
 
-  const lineChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'User Registrations Over Time',
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Number of Registrations',
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Month-Year',
-        },
-      },
-    },
-  };
-
-  // Bar chart data
   const barChartData = {
-    labels: regionData.map((data) => data.region),
+    labels: regionData.map((r: any) => r.region),
     datasets: [
       {
         label: 'Users by Region',
-        data: regionData.map((data) => data.count),
-        backgroundColor: [
-          '#3B82F6', // Blue
-          '#10B981', // Green
-          '#F59E0B', // Yellow
-          '#EF4444', // Red
-          '#8B5CF6', // Purple
-          '#EC4899', // Pink
-          '#6B7280', // Gray
-          '#14B8A6', // Teal
-          '#F97316', // Orange
-          '#6366F1', // Indigo
-        ],
-        borderColor: [
-          '#1E40AF',
-          '#047857',
-          '#B45309',
-          '#B91C1C',
-          '#5B21B6',
-          '#BE185D',
-          '#4B5563',
-          '#0F766E',
-          '#C2410C',
-          '#4338CA',
-        ],
-        borderWidth: 1,
+        data: regionData.map((r: any) => r.count),
+        backgroundColor: '#10B981',
       },
     ],
-  };
-
-  const barChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'User Distribution by Region',
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Number of Users',
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Region',
-        },
-      },
-    },
   };
 
   return (
     <div>
-      <h2 className={`text-3xl font-semibold ${colors.textPrimary} mb-6`}>Welcome!</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         <StatCard icon={Users} title="Total Users" value={stats.totalUsers} colors={colors} />
-        <StatCard icon={Briefcase} title="Providers" value={stats.totalProviders} colors={colors} />
+        <StatCard icon={Briefcase} title="Total Providers" value={stats.totalProviders} colors={colors} />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
-          <Line data={lineChartData} options={lineChartOptions} />
+        <div className={`p-4 rounded-lg ${colors.card} ${colors.border} border`}>
+          <Line data={lineChartData} />
         </div>
-        <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
-          <Bar data={barChartData} options={barChartOptions} />
+        <div className={`p-4 rounded-lg ${colors.card} ${colors.border} border`}>
+          <Bar data={barChartData} />
         </div>
       </div>
     </div>
   );
 };
 
-// Stat Card Component
-const StatCard = ({ icon: Icon, title, value, colors }: { icon: any; title: string; value: number; colors: any }) => (
+// Stat Card
+const StatCard = ({ icon: Icon, title, value, colors }: any) => (
   <div className={`p-6 rounded-lg shadow-sm ${colors.card} ${colors.border} border`}>
     <div className="flex items-center">
       <div className={`p-3 rounded-full ${colors.iconBg} mr-4`}>
@@ -490,15 +324,4 @@ const StatCard = ({ icon: Icon, title, value, colors }: { icon: any; title: stri
       </div>
     </div>
   </div>
-);
-
-// Action Button Component
-const ActionButton = ({ icon: Icon, label, onClick, colors }: { icon: any; label: string; onClick: () => void; colors: any }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center justify-center p-4 rounded-lg transition-all ${colors.card} ${colors.border} border ${colors.buttonHover}`}
-  >
-    <Icon className={`h-5 w-5 mr-2 ${colors.textAccent}`} />
-    <span className={colors.textPrimary}>{label}</span>
-  </button>
 );
