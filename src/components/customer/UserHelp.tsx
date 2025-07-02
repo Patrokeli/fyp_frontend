@@ -136,11 +136,6 @@ const faqCategories = [
   }
 ];
 
-
-
-
-  
-
 export const UserHelp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('general');
@@ -168,108 +163,121 @@ export const UserHelp = () => {
     : faqCategories.find(c => c.id === activeCategory)?.questions || [];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Help Center</h1>
-        <p className="text-gray-600 mt-1">
+      <header className="text-center max-w-2xl mx-auto">
+        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Help Center</h1>
+        <p className="mt-2 text-gray-600 text-lg">
           Find answers to common questions and get the most from your fiber service.
         </p>
-      </div>
+      </header>
 
       {/* Search */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={20} className="text-gray-400" />
-          </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search for help, FAQs, guides..."
-          />
-        </div>
+      <div className="bg-white p-5 rounded-2xl shadow-lg relative max-w-2xl mx-auto">
+        <Search
+          size={22}
+          className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 pointer-events-none"
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search for help, FAQs, guides..."
+          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          aria-label="Search FAQs"
+        />
       </div>
 
-      {/* FAQs */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-4">Frequently Asked Questions</h2>
-        {!searchQuery && (
-          <div className="flex overflow-x-auto space-x-2 pb-2 mb-4">
-            {faqCategories.map(category => (
-              <button
-                key={category.id}
-                className={`flex items-center px-4 py-2 rounded-full whitespace-nowrap ${
+      {/* FAQ Categories */}
+      {!searchQuery && (
+        <nav
+          aria-label="FAQ Categories"
+          className="flex space-x-4 overflow-x-auto px-1 max-w-2xl mx-auto snap-x snap-mandatory scrollbar-hide"
+        >
+          {faqCategories.map(category => (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={`snap-center flex items-center gap-2 px-5 py-3 rounded-full
+                text-sm font-semibold transition
+                ${
                   activeCategory === category.id
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                }`}
-                onClick={() => setActiveCategory(category.id)}
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+            >
+              {category.icon}
+              {category.name}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {/* FAQ List */}
+      <section className="max-w-2xl mx-auto space-y-5">
+        {filteredQuestions.length > 0 ? (
+          filteredQuestions.map(({ id, question, answer }) => {
+            const isOpen = expandedQuestions[id];
+            return (
+              <article
+                key={id}
+                className="border border-gray-200 rounded-2xl shadow-sm overflow-hidden
+                  transition-shadow hover:shadow-md"
               >
-                <span className="mr-2">{category.icon}</span>
-                {category.name}
-              </button>
-            ))}
+                <button
+                  aria-expanded={isOpen}
+                  onClick={() => toggleQuestion(id)}
+                  className="flex justify-between items-center w-full p-5 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <h3 className="text-lg font-medium text-gray-900 text-left">{question}</h3>
+                  {isOpen ? (
+                    <ChevronUp size={24} className="text-gray-500" />
+                  ) : (
+                    <ChevronDown size={24} className="text-gray-500" />
+                  )}
+                </button>
+                <div
+                  className={`px-5 pb-5 text-gray-700 text-base transition-max-height duration-300 ease-in-out overflow-hidden ${
+                    isOpen ? 'max-h-screen' : 'max-h-0'
+                  }`}
+                  style={{ whiteSpace: 'pre-line' }}
+                >
+                  {isOpen && <p>{answer}</p>}
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <div className="text-center py-16 max-w-sm mx-auto">
+            <HelpCircle size={56} className="mx-auto text-blue-300 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
+            <p className="text-gray-500">
+              Try adjusting your search or browse through the categories.
+            </p>
           </div>
         )}
+      </section>
 
-        <div className="space-y-4">
-          {filteredQuestions.length > 0 ? (
-            filteredQuestions.map(item => (
-              <div key={item.id} className="border rounded-lg overflow-hidden">
-                <div
-                  className="p-4 flex justify-between items-center cursor-pointer bg-gray-50 hover:bg-gray-100"
-                  onClick={() => toggleQuestion(item.id)}
-                >
-                  <h3 className="font-medium">{item.question}</h3>
-                  {expandedQuestions[item.id] ? (
-                    <ChevronUp size={20} className="text-gray-500" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-500" />
-                  )}
-                </div>
-                {expandedQuestions[item.id] && (
-                  <div className="p-4 bg-white">
-                    <p className="text-gray-700">{item.answer}</p>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-8">
-              <HelpCircle size={48} className="mx-auto text-gray-400" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">No results found</h3>
-              <p className="mt-1 text-gray-500">Try adjusting your search or browse through the categories.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-     
-
-      
-
-      {/* Still Need Help? */}
-      <div className="bg-blue-50 p-6 rounded-lg shadow border border-blue-100">
-        <div className="flex flex-col md:flex-row md:items-center justify-between">
+      {/* Contact Support */}
+      <section className="max-w-2xl mx-auto bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-blue-800">Still Need Help?</h2>
-            <p className="text-blue-600 mt-1">
+            <h2 className="text-2xl font-semibold text-blue-800">Still Need Help?</h2>
+            <p className="text-blue-700 mt-1">
               Our support team is ready to assist you with any questions or issues.
             </p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-              onClick={() => (window.location.href = '/user/support')}
-            >
-              Contact Support
-            </button>
-          </div>
+          <button
+            onClick={() => (window.location.href = '/user/support')}
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md
+              transition focus:outline-none focus:ring-4 focus:ring-blue-400"
+          >
+            Contact Support
+          </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
