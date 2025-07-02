@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   HelpCircle,
   ChevronDown,
@@ -136,31 +136,90 @@ const faqCategories = [
   }
 ];
 
+// Debounce helper hook
+function useDebounce<T>(value: T, delay = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debounced;
+}
+
 export const UserHelp = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [activeCategory, setActiveCategory] = useState('general');
-  const [expandedQuestions, setExpandedQuestions] = useState<{ [key: string]: boolean }>({});
+  const [expandedQuestions, setExpandedQuestions] = useState<Record<string, Set<string>>>({
+    general: new Set(),
+    installation: new Set(),
+    billing: new Set(),
+    technical: new Set(),
+  });
+
+  const questionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const toggleQuestion = (questionId: string) => {
-    setExpandedQuestions(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }));
+  const toggleQuestion = (categoryId: string, questionId: string) => {
+    setExpandedQuestions(prev => {
+      const newExpanded = new Set(prev[categoryId]);
+      if (newExpanded.has(questionId)) {
+        newExpanded.delete(questionId);
+      } else {
+        newExpanded.add(questionId);
+      }
+      return { ...prev, [categoryId]: newExpanded };
+    });
   };
 
-  const filteredQuestions = searchQuery
-    ? faqCategories.flatMap(category =>
-        category.questions.filter(
-          q =>
-            q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            q.answer.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return text;
+    const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+    return text.split(regex).map((part, i) =>
+      regex.test(part) ? (
+        <mark key={i} className="bg-yellow-200 text-yellow-900 rounded px-1">{part}</mark>
+      ) : (
+        part
       )
-    : faqCategories.find(c => c.id === activeCategory)?.questions || [];
+    );
+  };
+
+  const filteredByCategory = useMemo(() => {
+    if (!debouncedSearch.trim()) {
+      return null;
+    }
+    const lower = debouncedSearch.toLowerCase();
+    const result: Record<string, typeof faqCategories[0]['questions']> = {};
+    faqCategories.forEach(cat => {
+      const matched = cat.questions.filter(q =>
+        q.question.toLowerCase().includes(lower) || q.answer.toLowerCase().includes(lower)
+      );
+      if (matched.length) {
+        result[cat.id] = matched;
+      }
+    });
+    return result;
+  }, [debouncedSearch]);
+
+  const onKeyDownQuestion = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    categoryId: string,
+    index: number,
+    questions: typeof faqCategories[0]['questions']
+  ) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % questions.length;
+      questionRefs.current[questions[nextIndex].id]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + questions.length) % questions.length;
+      questionRefs.current[questions[prevIndex].id]?.focus();
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 px-4 py-8 sm:px-6 lg:px-8">
@@ -190,7 +249,7 @@ export const UserHelp = () => {
       </div>
 
       {/* FAQ Categories */}
-      {!searchQuery && (
+      {!debouncedSearch && (
         <nav
           aria-label="FAQ Categories"
           className="flex space-x-4 overflow-x-auto px-1 max-w-2xl mx-auto snap-x snap-mandatory scrollbar-hide"
@@ -207,6 +266,7 @@ export const UserHelp = () => {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              aria-pressed={activeCategory === category.id}
             >
               {category.icon}
               {category.name}
@@ -217,46 +277,110 @@ export const UserHelp = () => {
 
       {/* FAQ List */}
       <section className="max-w-2xl mx-auto space-y-5">
-        {filteredQuestions.length > 0 ? (
-          filteredQuestions.map(({ id, question, answer }) => {
-            const isOpen = expandedQuestions[id];
-            return (
-              <article
-                key={id}
-                className="border border-gray-200 rounded-2xl shadow-sm overflow-hidden
-                  transition-shadow hover:shadow-md"
-              >
-                <button
-                  aria-expanded={isOpen}
-                  onClick={() => toggleQuestion(id)}
-                  className="flex justify-between items-center w-full p-5 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <h3 className="text-lg font-medium text-gray-900 text-left">{question}</h3>
-                  {isOpen ? (
-                    <ChevronUp size={24} className="text-gray-500" />
-                  ) : (
-                    <ChevronDown size={24} className="text-gray-500" />
-                  )}
-                </button>
-                <div
-                  className={`px-5 pb-5 text-gray-700 text-base transition-max-height duration-300 ease-in-out overflow-hidden ${
-                    isOpen ? 'max-h-screen' : 'max-h-0'
-                  }`}
-                  style={{ whiteSpace: 'pre-line' }}
-                >
-                  {isOpen && <p>{answer}</p>}
+        {debouncedSearch ? (
+          Object.keys(filteredByCategory || {}).length > 0 ? (
+            Object.entries(filteredByCategory!).map(([categoryId, questions]) => (
+              <div key={categoryId}>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  {faqCategories.find(c => c.id === categoryId)?.icon}
+                  {faqCategories.find(c => c.id === categoryId)?.name}
+                </h2>
+                <div className="space-y-4">
+                  {questions.map(({ id, question, answer }, idx) => {
+                    const isOpen = expandedQuestions[categoryId]?.has(id);
+                    return (
+                      <article
+                        key={id}
+                        className="border border-gray-200 rounded-2xl shadow-sm overflow-hidden
+                          transition-shadow hover:shadow-md"
+                      >
+                        <button
+                          ref={el => (questionRefs.current[id] = el)}
+                          aria-expanded={isOpen}
+                          aria-controls={`${id}-panel`}
+                          id={`${id}-button`}
+                          onClick={() => toggleQuestion(categoryId, id)}
+                          onKeyDown={e => onKeyDownQuestion(e, categoryId, idx, questions)}
+                          className="flex justify-between items-center w-full p-5 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <h3 className="text-lg font-medium text-gray-900 text-left">
+                            {highlightMatch(question, debouncedSearch)}
+                          </h3>
+                          {isOpen ? (
+                            <ChevronUp size={24} className="text-gray-500" />
+                          ) : (
+                            <ChevronDown size={24} className="text-gray-500" />
+                          )}
+                        </button>
+                        <div
+                          id={`${id}-panel`}
+                          role="region"
+                          aria-labelledby={`${id}-button`}
+                          className={`px-5 pb-5 text-gray-700 text-base transition-max-height duration-300 ease-in-out overflow-hidden ${
+                            isOpen ? 'max-h-screen' : 'max-h-0'
+                          }`}
+                          style={{ whiteSpace: 'pre-line' }}
+                        >
+                          {isOpen && <p>{highlightMatch(answer, debouncedSearch)}</p>}
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-              </article>
-            );
-          })
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-16 max-w-sm mx-auto">
+              <HelpCircle size={56} className="mx-auto text-blue-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
+              <p className="text-gray-500">
+                Try adjusting your search or browse through the categories.
+              </p>
+            </div>
+          )
         ) : (
-          <div className="text-center py-16 max-w-sm mx-auto">
-            <HelpCircle size={56} className="mx-auto text-blue-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
-            <p className="text-gray-500">
-              Try adjusting your search or browse through the categories.
-            </p>
-          </div>
+          faqCategories
+            .find(c => c.id === activeCategory)
+            ?.questions.map(({ id, question, answer }, idx) => {
+              const isOpen = expandedQuestions[activeCategory]?.has(id);
+              return (
+                <article
+                  key={id}
+                  className="border border-gray-200 rounded-2xl shadow-sm overflow-hidden
+                    transition-shadow hover:shadow-md"
+                >
+                  <button
+                    ref={el => (questionRefs.current[id] = el)}
+                    aria-expanded={isOpen}
+                    aria-controls={`${id}-panel`}
+                    id={`${id}-button`}
+                    onClick={() => toggleQuestion(activeCategory, id)}
+                    onKeyDown={e =>
+                      onKeyDownQuestion(e, activeCategory, idx, faqCategories.find(c => c.id === activeCategory)!.questions)
+                    }
+                    className="flex justify-between items-center w-full p-5 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <h3 className="text-lg font-medium text-gray-900 text-left">{question}</h3>
+                    {isOpen ? (
+                      <ChevronUp size={24} className="text-gray-500" />
+                    ) : (
+                      <ChevronDown size={24} className="text-gray-500" />
+                    )}
+                  </button>
+                  <div
+                    id={`${id}-panel`}
+                    role="region"
+                    aria-labelledby={`${id}-button`}
+                    className={`px-5 pb-5 text-gray-700 text-base transition-max-height duration-300 ease-in-out overflow-hidden ${
+                      isOpen ? 'max-h-screen' : 'max-h-0'
+                    }`}
+                    style={{ whiteSpace: 'pre-line' }}
+                  >
+                    {isOpen && <p>{answer}</p>}
+                  </div>
+                </article>
+              );
+            })
         )}
       </section>
 
