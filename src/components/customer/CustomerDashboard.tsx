@@ -17,8 +17,21 @@ export const ParticleBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Set canvas size initially
+    const setCanvasSize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    setCanvasSize();
+
+    type Particle = {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      color: string;
+    };
 
     const particles: Particle[] = [];
     const particleCount = 30;
@@ -55,8 +68,7 @@ export const ParticleBackground = () => {
     };
 
     const handleResize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      setCanvasSize();
     };
 
     window.addEventListener('resize', handleResize);

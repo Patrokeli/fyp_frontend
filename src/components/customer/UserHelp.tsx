@@ -136,67 +136,10 @@ const faqCategories = [
   }
 ];
 
-const videoTutorials = [
-  {
-    id: 1,
-    title: 'How to Set Up Your Router',
-    thumbnail: 'https://placehold.co/320x180/3b82f6/ffffff?text=Router+Setup',
-    duration: '4:32',
-    description: 'Learn how to properly set up and configure your fiber router for optimal performance.'
-  },
-  {
-    id: 2,
-    title: 'Troubleshooting Connection Issues',
-    thumbnail: 'https://placehold.co/320x180/10b981/ffffff?text=Troubleshooting',
-    duration: '7:15',
-    description: 'Common connection problems and how to resolve them quickly.'
-  },
-  {
-    id: 3,
-    title: 'Understanding Your Fiber Package',
-    thumbnail: 'https://placehold.co/320x180/f59e0b/ffffff?text=Fiber+Packages',
-    duration: '5:48',
-    description: 'A guide to understanding the different components of your fiber internet package.'
-  },
-  {
-    id: 4,
-    title: 'Wi-Fi Optimization Tips',
-    thumbnail: 'https://placehold.co/320x180/8b5cf6/ffffff?text=WiFi+Tips',
-    duration: '6:22',
-    description: 'Tips and tricks to get the best Wi-Fi coverage and speed throughout your home.'
-  }
-];
 
-const userGuides = [
-  {
-    id: 1,
-    title: 'Getting Started with Fiber',
-    icon: 'https://placehold.co/48x48/3b82f6/ffffff?text=PDF',
-    type: 'PDF',
-    size: '2.4 MB'
-  },
-  {
-    id: 2,
-    title: 'Router Configuration Guide',
-    icon: 'https://placehold.co/48x48/10b981/ffffff?text=PDF',
-    type: 'PDF',
-    size: '1.8 MB'
-  },
-  {
-    id: 3,
-    title: 'Troubleshooting Common Issues',
-    icon: 'https://placehold.co/48x48/f59e0b/ffffff?text=PDF',
-    type: 'PDF',
-    size: '3.2 MB'
-  },
-  {
-    id: 4,
-    title: 'Understanding Your Bill',
-    icon: 'https://placehold.co/48x48/8b5cf6/ffffff?text=PDF',
-    type: 'PDF',
-    size: '1.5 MB'
-  }
-];
+
+
+  
 
 export const UserHelp = () => {
   const [searchQuery, setSearchQuery] = useState('');
