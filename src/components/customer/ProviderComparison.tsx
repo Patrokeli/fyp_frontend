@@ -116,15 +116,16 @@ export function ProviderComparison() {
   };
 
   return (
-    <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+    <div className="bg-gray-50 p-6 rounded-xl shadow">
+      {/* Filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h2 className="text-xl font-bold text-gray-700">Compare Fiber Providers</h2>
-        <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+        <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
           <div className="flex items-center">
             <label htmlFor="speedFilter" className="text-sm mr-2">Speed:</label>
             <select
               id="speedFilter"
-              className="text-sm border-gray-300 rounded px-2 py-1"
+              className="text-sm border border-gray-300 rounded px-2 py-1"
               value={speedFilter}
               onChange={(e) => setSpeedFilter(e.target.value)}
             >
@@ -140,7 +141,7 @@ export function ProviderComparison() {
             <label htmlFor="priceFilter" className="text-sm mr-2">Price:</label>
             <select
               id="priceFilter"
-              className="text-sm border-gray-300 rounded px-2 py-1"
+              className="text-sm border border-gray-300 rounded px-2 py-1"
               value={priceFilter}
               onChange={(e) => setPriceFilter(e.target.value)}
             >
@@ -161,35 +162,45 @@ export function ProviderComparison() {
         </div>
       </div>
 
+      {/* Provider Cards */}
       {filteredProviders.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProviders.map((provider) => (
             <div
               key={provider.id}
-              className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
+              className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Wifi className="h-5 w-5 text-blue-500" />
                 <h3 className="text-lg font-semibold text-gray-800">{provider.name}</h3>
               </div>
+
               <div className="space-y-1 text-sm text-gray-600">
                 <p><span className="font-medium">Speed:</span> {provider.speeds[0]}</p>
                 <p><span className="font-medium">Price:</span> {provider.prices[0]}</p>
-                <p><span className="font-medium">Installation:</span> {provider.installation}</p>
-                <p><span className="font-medium">Contract:</span> {provider.contract}</p>
                 <p><span className="font-medium">Coverage:</span> {provider.coverage}</p>
+                <p><span className="font-medium">Contract:</span> {provider.contract}</p>
+                <p><span className="font-medium">Installation:</span> {provider.installation}</p>
               </div>
+
+              {/* Badges */}
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {provider.installation.toLowerCase().includes('free') && (
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free Installation</span>
+                )}
+                {provider.contract.toLowerCase().includes('no contract') && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">No Contract</span>
+                )}
+              </div>
+
+              {/* Rating */}
               <div className="mt-3 flex items-center">
-                <span className="text-sm text-yellow-500 font-medium mr-2">{provider.rating}/5</span>
+                <span className="text-sm font-medium text-yellow-600 mr-2">{provider.rating}/5</span>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(provider.rating)
-                          ? 'text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
+                      className={`w-4 h-4 ${i < Math.floor(provider.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -198,6 +209,8 @@ export function ProviderComparison() {
                   ))}
                 </div>
               </div>
+
+              {/* Call to Action */}
               <a
                 href={provider.actionUrl}
                 target="_blank"
