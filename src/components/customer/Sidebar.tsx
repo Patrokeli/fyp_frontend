@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
-import { Star, LifeBuoy, Home, LogOut, X, Search, GitCompare } from 'lucide-react';
+import {
+  Star,
+  LifeBuoy,
+  Home,
+  LogOut,
+  X,
+  Search,
+  GitCompare,
+  HelpCircle
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-type Tab = 'dashboard' | 'search' | 'compare' | 'rate' | 'support';
+// Extend the Tab type to include 'help'
+type Tab = 'dashboard' | 'search' | 'compare' | 'rate' | 'support' | 'help';
 
 type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void;
   currentTab: Tab;
   changeTab: (tab: Tab) => void;
+};
+
+type NavItem = {
+  name: string;
+  icon: JSX.Element;
+  tab: Tab;
 };
 
 export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps) {
@@ -26,12 +42,13 @@ export function Sidebar({ isOpen, onClose, currentTab, changeTab }: SidebarProps
     }
   };
 
-  const navItems: { name: string; icon: JSX.Element; tab: Tab }[] = [
+  const navItems: NavItem[] = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" />, tab: 'dashboard' },
     { name: 'Search', icon: <Search className="h-5 w-5" />, tab: 'search' },
     { name: 'Compare', icon: <GitCompare className="h-5 w-5" />, tab: 'compare' },
     { name: 'Rate', icon: <Star className="h-5 w-5" />, tab: 'rate' },
     { name: 'Support', icon: <LifeBuoy className="h-5 w-5" />, tab: 'support' },
+    { name: 'Help Center', icon: <HelpCircle className="h-5 w-5" />, tab: 'help' }
   ];
 
   return (

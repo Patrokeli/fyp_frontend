@@ -1,11 +1,5 @@
-// src/components/customer/ProviderComparison.tsx
 import React, { useState } from 'react';
-import { Wifi } from 'lucide-react';
-
-type ProviderAction = {
-  name: string;
-  url: string;
-};
+import { Filter, Wifi, Globe, Wrench, Rocket, BadgeDollarSign, FileText } from 'lucide-react';
 
 type Provider = {
   id: string;
@@ -16,202 +10,214 @@ type Provider = {
   contract: string;
   coverage: string;
   rating: number;
-  actions: ProviderAction[];
+  actionUrl: string;
 };
 
+const providers: Provider[] = [
+  {
+    id: '1',
+    name: 'TTCL Fiber',
+    speeds: ['Up to 500Mbps'],
+    prices: ['45,000 TZS/mo'],
+    installation: 'Free installation for new customers',
+    contract: '12-month contract',
+    coverage: '15 regions',
+    rating: 4.2,
+    actionUrl: 'https://fiber.ttcl.co.tz/application/#/home',
+  },
+  {
+    id: '2',
+    name: 'Liquid',
+    speeds: ['Up to 1Gbps'],
+    prices: ['65,000 TZS/mo'],
+    installation: 'Standard setup within 3 days',
+    contract: 'No contract required',
+    coverage: '10 regions',
+    rating: 4.6,
+    actionUrl: 'https://www.liquidhome.co.tz/products-and-services/packages/fibre',
+  },
+  {
+    id: '3',
+    name: 'Zuku',
+    speeds: ['Up to 250Mbps'],
+    prices: ['40,000 TZS/mo'],
+    installation: 'Free for select locations',
+    contract: '6-month renewable',
+    coverage: '8 regions',
+    rating: 3.8,
+    actionUrl: 'https://zuku.co.tz/fiber/',
+  },
+  {
+    id: '4',
+    name: 'NASO',
+    speeds: ['Up to 200Mbps'],
+    prices: ['35,000 TZS/mo'],
+    installation: 'Standard installation',
+    contract: '6-month contract',
+    coverage: '6 regions',
+    rating: 4.1,
+    actionUrl: '#',
+  },
+  {
+    id: '5',
+    name: 'Yas Fiber',
+    speeds: ['Up to 300Mbps'],
+    prices: ['42,000 TZS/mo'],
+    installation: 'Free installation',
+    contract: '12-month contract',
+    coverage: '5 regions',
+    rating: 4.3,
+    actionUrl: 'https://yas.co.tz/consumer/home-plans/fiber-home/',
+  },
+  {
+    id: '6',
+    name: 'Simba Net',
+    speeds: ['Up to 150Mbps'],
+    prices: ['30,000 TZS/mo'],
+    installation: 'Standard fee applies',
+    contract: 'No contract',
+    coverage: '4 regions',
+    rating: 3.9,
+    actionUrl: 'https://www.simbanet.net/',
+  },
+  {
+    id: '7',
+    name: 'Savannah Fiber',
+    speeds: ['Up to 100Mbps'],
+    prices: ['25,000 TZS/mo'],
+    installation: 'Paid installation',
+    contract: 'Monthly plan',
+    coverage: '3 regions',
+    rating: 3.7,
+    actionUrl: 'https://savannafibre.co.tz/',
+  },
+];
+
 export function ProviderComparison() {
-  const [selectedSpeed, setSelectedSpeed] = useState<'all' | 'basic' | 'standard' | 'premium'>('all');
+  const [speedFilter, setSpeedFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all');
 
-  const providers: Provider[] = [
-    {
-      id: '1',
-      name: 'Zuku',
-      speeds: ['10 Mbps', '30 Mbps', '100 Mbps'],
-      prices: ['30,000 TZS', '45,000 TZS', '75,000 TZS'],
-      installation: 'Free',
-      contract: '12 months',
-      coverage: 'Dar es Salaam, Arusha, Mwanza',
-      rating: 4.2,
-      actions: [
-        { name: 'Installation Request', url: 'https://zuku.co.tz/request-installation' },
-      ],
-    },
-    {
-      id: '2',
-      name: 'TTCL',
-      speeds: ['5 Mbps', '20 Mbps', '50 Mbps'],
-      prices: ['25,000 TZS', '40,000 TZS', '65,000 TZS'],
-      installation: '50,000 TZS',
-      contract: '6 months',
-      coverage: 'Nationwide',
-      rating: 3.8,
-      actions: [
-        { name: 'Installation Request', url: 'https://ttcl.co.tz/request-installation' },
-      ],
-    },
-    {
-      id: '3',
-      name: 'SimbaNet',
-      speeds: ['20 Mbps', '50 Mbps', '200 Mbps'],
-      prices: ['35,000 TZS', '60,000 TZS', '120,000 TZS'],
-      installation: 'Free',
-      contract: '12 months',
-      coverage: 'Dar es Salaam, Arusha, Moshi',
-      rating: 4.5,
-      actions: [
-        { name: 'Installation Request', url: 'https://simbanet.co.tz/request-installation' },
-      ],
-    },
-    {
-      id: '4',
-      name: 'YAS Fiber',
-      speeds: ['15 Mbps', '40 Mbps', '100 Mbps'],
-      prices: ['32,000 TZS', '55,000 TZS', '85,000 TZS'],
-      installation: '30,000 TZS',
-      contract: 'No contract',
-      coverage: 'Dar es Salaam, Zanzibar',
-      rating: 4.0,
-      actions: [
-        { name: 'Installation Request', url: 'https://yasfiber.co.tz/request-installation' },
-      ],
-    },
-  ];
+  const parseSpeed = (s: string) => parseInt(s.replace(/[^\d]/g, '') || '0', 10);
+  const parsePrice = (p: string) => parseInt(p.replace(/[^\d]/g, '') || '0', 10);
 
-  // Parse speed string to number
-  const parseSpeed = (speedStr: string) => parseInt(speedStr.split(' ')[0], 10);
-
-  // Filter by selected speed category
-  const filteredProviders = providers.filter((provider) => {
-    if (selectedSpeed === 'all') return true;
-    const maxSpeed = Math.max(...provider.speeds.map(parseSpeed));
-    if (selectedSpeed === 'basic') return maxSpeed >= 5 && maxSpeed <= 15;
-    if (selectedSpeed === 'standard') return maxSpeed >= 20 && maxSpeed <= 50;
-    if (selectedSpeed === 'premium') return maxSpeed >= 100;
-    return true;
+  const filtered = providers.filter((p) => {
+    const speed = Math.max(...p.speeds.map(parseSpeed));
+    const price = Math.min(...p.prices.map(parsePrice));
+    return (
+      (speedFilter === 'all' || speed >= parseInt(speedFilter)) &&
+      (priceFilter === 'all' || price <= parseInt(priceFilter))
+    );
   });
 
-  const handleActionClick = (url: string) => {
-    window.open(url, '_blank');
-  };
-
   return (
-    <section className="py-16 bg-white" id="providers">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Compare Fiber Providers</h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Find the perfect fiber internet plan for your home or business in Tanzania.
-          </p>
-          <div className="mt-8 flex justify-center space-x-4">
-            {(['all', 'basic', 'standard', 'premium'] as const).map((speed) => {
-              const label =
-                speed === 'all'
-                  ? 'All Speeds'
-                  : speed === 'basic'
-                  ? 'Basic (5-15 Mbps)'
-                  : speed === 'standard'
-                  ? 'Standard (20-50 Mbps)'
-                  : 'Premium (100+ Mbps)';
-              return (
-                <button
-                  key={speed}
-                  onClick={() => setSelectedSpeed(speed)}
-                  className={`px-4 py-2 rounded-md ${
-                    selectedSpeed === speed ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+    <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h2 className="text-xl font-bold text-gray-700">Compare Fiber Providers</h2>
+        <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+          <div className="flex items-center">
+            <label htmlFor="speedFilter" className="text-sm mr-2">Speed:</label>
+            <select
+              id="speedFilter"
+              className="text-sm border rounded px-2 py-1"
+              value={speedFilter}
+              onChange={(e) => setSpeedFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="100">100+ Mbps</option>
+              <option value="200">200+ Mbps</option>
+              <option value="300">300+ Mbps</option>
+              <option value="500">500+ Mbps</option>
+              <option value="1000">1 Gbps+</option>
+            </select>
           </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Speed</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Month</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Installation</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contract</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coverage</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProviders.map((provider) => (
-                <tr key={provider.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <Wifi className="h-10 w-10 text-blue-500" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{provider.name}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">Up to {provider.speeds[provider.speeds.length - 1]}</div>
-                    <div className="text-sm text-gray-500">Multiple plans available</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">From {provider.prices[0]}</div>
-                    <div className="text-sm text-gray-500">Monthly payment</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{provider.installation}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{provider.contract}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{provider.coverage}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="text-sm font-medium text-gray-900">{provider.rating}/5</div>
-                      <div className="ml-1 flex">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            xmlns="http://www.w3.org/2000/svg"
-                            className={`h-4 w-4 ${i < Math.floor(provider.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex flex-col space-y-2">
-                      {provider.actions.map((action, idx) => (
-                        <a
-                          key={idx}
-                          href={action.url}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleActionClick(action.url);
-                          }}
-                          className="inline-flex items-center justify-center text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-md text-sm"
-                        >
-                          {action.name}
-                        </a>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-8 text-center">
-          <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-md font-medium">
-            See All Providers
+          <div className="flex items-center">
+            <label htmlFor="priceFilter" className="text-sm mr-2">Price:</label>
+            <select
+              id="priceFilter"
+              className="text-sm border rounded px-2 py-1"
+              value={priceFilter}
+              onChange={(e) => setPriceFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="30000">Under 30,000 TZS</option>
+              <option value="40000">Under 40,000 TZS</option>
+              <option value="50000">Under 50,000 TZS</option>
+              <option value="60000">Under 60,000 TZS</option>
+            </select>
+          </div>
+          <button
+            onClick={() => {
+              setSpeedFilter('all');
+              setPriceFilter('all');
+            }}
+            className="flex items-center text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded"
+          >
+            <Filter size={14} className="mr-1" />
+            Reset
           </button>
         </div>
       </div>
-    </section>
+
+      {/* Cards */}
+      {filtered.length ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((p) => (
+            <div
+              key={p.id}
+              className="bg-white border rounded-xl p-5 shadow hover:shadow-lg transition-all"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Wifi className="text-blue-600" size={20} />
+                  <h3 className="text-lg font-bold text-gray-800">{p.name}</h3>
+                </div>
+                <span className="text-sm text-yellow-600 font-semibold">{p.rating}/5</span>
+              </div>
+
+              <ul className="text-sm text-gray-600 space-y-2 mt-4">
+                <li className="flex items-start gap-2">
+                  <Rocket className="text-blue-500" size={16} /> <span><strong>Speed:</strong> {p.speeds[0]}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <BadgeDollarSign className="text-green-600" size={16} /> <span><strong>Price:</strong> {p.prices[0]}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FileText className="text-purple-500" size={16} /> <span><strong>Contract:</strong> {p.contract}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Globe className="text-indigo-500" size={16} /> <span><strong>Coverage:</strong> {p.coverage}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Wrench className="text-orange-500" size={16} /> <span><strong>Installation:</strong> {p.installation}</span>
+                </li>
+              </ul>
+
+              {/* Badges */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {p.installation.toLowerCase().includes('free') && (
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free Installation</span>
+                )}
+                {p.contract.toLowerCase().includes('no contract') && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">No Contract</span>
+                )}
+              </div>
+
+              {/* CTA */}
+              <a
+                href={p.actionUrl}
+                className="mt-4 block text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium transition"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Request Installation
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 py-8">No providers match your filters.</div>
+      )}
+    </div>
   );
 }
