@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { Filter, Wifi } from 'lucide-react';
 
-type ProviderAction = {
-  name: string;
-  url: string;
-};
-
 type Provider = {
   id: string;
   name: string;
@@ -15,10 +10,9 @@ type Provider = {
   contract: string;
   coverage: string;
   rating: number;
-  actions: ProviderAction[];
+  actionUrl: string;
 };
 
-// Realistic service provider data transformed to match the new Provider type
 const providers: Provider[] = [
   {
     id: '1',
@@ -29,10 +23,7 @@ const providers: Provider[] = [
     contract: '12-month contract',
     coverage: '15 regions',
     rating: 4.2,
-    actions: [
-      { name: 'Visit Website', url: 'https://ttcl.co.tz' },
-      { name: 'Request Installation', url: '#' },
-    ],
+    actionUrl: '#',
   },
   {
     id: '2',
@@ -43,7 +34,7 @@ const providers: Provider[] = [
     contract: 'No contract required',
     coverage: '10 regions',
     rating: 4.6,
-    actions: [{ name: 'Visit Website', url: 'https://liquid.tech' }],
+    actionUrl: '#',
   },
   {
     id: '3',
@@ -54,51 +45,51 @@ const providers: Provider[] = [
     contract: '6-month renewable',
     coverage: '8 regions',
     rating: 3.8,
-    actions: [{ name: 'Check Availability', url: '#' }],
+    actionUrl: '#',
   },
   {
     id: '4',
     name: 'NASO',
     speeds: ['Up to 200Mbps'],
     prices: ['35,000 TZS/mo'],
-    installation: 'Charges may apply',
-    contract: 'Flexible plans',
+    installation: 'Standard installation',
+    contract: '6-month contract',
     coverage: '6 regions',
-    rating: 4.0,
-    actions: [{ name: 'Contact Support', url: '#' }],
+    rating: 4.1,
+    actionUrl: '#',
   },
   {
     id: '5',
     name: 'Yas Fiber',
     speeds: ['Up to 300Mbps'],
     prices: ['42,000 TZS/mo'],
-    installation: 'Next day setup',
+    installation: 'Free installation',
     contract: '12-month contract',
     coverage: '5 regions',
-    rating: 3.5,
-    actions: [{ name: 'Subscribe Now', url: '#' }],
+    rating: 4.3,
+    actionUrl: '#',
   },
   {
     id: '6',
     name: 'Simba Net',
     speeds: ['Up to 150Mbps'],
     prices: ['30,000 TZS/mo'],
-    installation: 'Free router included',
-    contract: '12-months',
+    installation: 'Standard fee applies',
+    contract: 'No contract',
     coverage: '4 regions',
     rating: 3.9,
-    actions: [{ name: 'Order Now', url: '#' }],
+    actionUrl: '#',
   },
   {
     id: '7',
     name: 'Savannah Fiber',
     speeds: ['Up to 100Mbps'],
     prices: ['25,000 TZS/mo'],
-    installation: 'Standard installation',
+    installation: 'Paid installation',
     contract: 'Monthly plan',
     coverage: '3 regions',
-    rating: 3.3,
-    actions: [{ name: 'Learn More', url: '#' }],
+    rating: 3.7,
+    actionUrl: '#',
   },
 ];
 
@@ -106,18 +97,17 @@ export function ProviderComparison() {
   const [speedFilter, setSpeedFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
 
-  const parseSpeed = (speedStr: string) => parseInt(speedStr.replace(/[^\d]/g, ''), 10);
-  const parsePrice = (priceStr: string) => parseInt(priceStr.replace(/[^\d]/g, ''), 10);
+  const parseSpeed = (speedStr: string) =>
+    parseInt(speedStr.replace(/[^\d]/g, '') || '0', 10);
+  const parsePrice = (priceStr: string) =>
+    parseInt(priceStr.replace(/[^\d]/g, '') || '0', 10);
 
   const filteredProviders = providers.filter((provider) => {
     const maxSpeed = Math.max(...provider.speeds.map(parseSpeed));
     const minPrice = Math.min(...provider.prices.map(parsePrice));
 
-    const matchesSpeed =
-      speedFilter === 'all' || parseInt(speedFilter) <= maxSpeed;
-
-    const matchesPrice =
-      priceFilter === 'all' || minPrice <= parseInt(priceFilter);
+    const matchesSpeed = speedFilter === 'all' || maxSpeed >= parseInt(speedFilter);
+    const matchesPrice = priceFilter === 'all' || minPrice <= parseInt(priceFilter);
 
     return matchesSpeed && matchesPrice;
   });
@@ -202,17 +192,14 @@ export function ProviderComparison() {
                 </div>
               </div>
               <div className="mt-4">
-                {provider.actions.map((action, idx) => (
-                  <a
-                    key={idx}
-                    href={action.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded mb-2"
-                  >
-                    {action.name}
-                  </a>
-                ))}
+                <a
+                  href={provider.actionUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded"
+                >
+                  Request Installation
+                </a>
               </div>
             </div>
           ))}
