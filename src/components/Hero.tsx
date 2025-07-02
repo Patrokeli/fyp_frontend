@@ -1,7 +1,16 @@
-import React, { useEffect } from 'react';
-import { Zap, CheckCircle, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Zap, CheckCircle, ArrowRight, XCircle, UserPlus, LogIn } from 'lucide-react';
+import { RegisterForm } from './auth/RegisterForm';
+import { LoginForm } from './auth/LoginForm';
+import { useAuth } from '../contexts/AuthContext';
+import backgroundImage from '/src/assets/bg-image.png'; // Adjust this path to where you place the image
 
 export function Hero() {
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const { user } = useAuth();
+
   // Fiber optic cable animation effect
   useEffect(() => {
     const canvas = document.getElementById('fiberCanvas') as HTMLCanvasElement;
@@ -52,16 +61,40 @@ export function Hero() {
     return () => cancelAnimationFrame(animate);
   }, []);
 
+  const handleActionClick = () => {
+    if (!user) {
+      setShowAuthPrompt(true);
+      return;
+    }
+    window.location.href = '#providers';
+  };
+
+  const handleCoverageClick = () => {
+    if (!user) {
+      setShowAuthPrompt(true);
+      return;
+    }
+    window.location.href = '#coverage';
+  };
+
   return (
     <div className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
+      {/* Background Image Layer */}
+      <div
+        className="absolute inset-0 bg-center bg-cover opacity-30"
+        style={{ backgroundImage: `url(${backgroundImage})`, zIndex: 0 }}
+        aria-hidden="true"
+      />
+
       {/* Animated fiber background */}
       <canvas 
         id="fiberCanvas" 
         className="absolute inset-0 w-full h-full opacity-30"
+        style={{ zIndex: 1 }}
       />
       
       {/* Glowing dots animation */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 2 }}>
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
@@ -78,7 +111,7 @@ export function Hero() {
         ))}
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32" style={{ zIndex: 3 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 animate-fade-in">
@@ -95,11 +128,17 @@ export function Hero() {
             </p>
             
             <div className="flex gap-4 animate-slide-up delay-200">
-              <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <button 
+                onClick={handleActionClick}
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
                 <span>Compare Providers</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
-              <button className="flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-xl font-medium border border-white/20 transition-all duration-300">
+              <button 
+                onClick={handleCoverageClick}
+                className="flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-xl font-medium border border-white/20 transition-all duration-300"
+              >
                 <span>View Coverage</span>
               </button>
             </div>
@@ -153,6 +192,101 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Enhanced Authentication Prompt */}
+      {showAuthPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-700 max-w-md w-full overflow-hidden transform transition-all">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Zap className="h-6 w-6 text-yellow-400" />
+                    Join FiberFinder
+                  </h3>
+                  <p className="text-gray-300 mt-1">Unlock full access to our services</p>
+                </div>
+                <button 
+                  onClick={() => setShowAuthPrompt(false)} 
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gray-700/50 p-4 rounded-lg border-l-4 border-yellow-500">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-white">Why create an account?</h4>
+                      <p className="text-gray-300 text-sm mt-1">
+                        Save your comparisons, get personalized recommendations, and access exclusive deals on fiber internet packages.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowAuthPrompt(false);
+                      setShowRegisterForm(true);
+                    }}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    Create Free Account
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowAuthPrompt(false);
+                      setShowLoginForm(true);
+                    }}
+                    className="flex items-center justify-center gap-2 bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium border border-gray-600 transition-all"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Sign In to Existing Account
+                  </button>
+                </div>
+
+                <div className="text-center text-gray-400 text-xs mt-4">
+                  By continuing, you agree to our Terms of Service and Privacy Policy
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRegisterForm && (
+        <RegisterForm
+          onClose={() => setShowRegisterForm(false)}
+          onSuccess={() => {
+            setShowRegisterForm(false);
+            // Redirect or perform action after successful registration
+          }}
+          onSwitchToLogin={() => {
+            setShowRegisterForm(false);
+            setShowLoginForm(true);
+          }}
+        />
+      )}
+
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onSuccess={() => {
+            setShowLoginForm(false);
+            // Redirect or perform action after successful login
+          }}
+          onSwitchToRegister={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
+          }}
+        />
+      )}
     </div>
   );
 }
