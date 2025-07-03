@@ -94,9 +94,9 @@ export function Testimonials() {
         </div>
 
         <div className="mt-16 text-center">
-          <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition">
+          {/*<button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition">
             Read More Testimonials
-          </button>
+          </button>*/}
         </div>
       </div>
     </section>

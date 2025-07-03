@@ -68,13 +68,13 @@ export function HowItWorks() {
             <p className="text-gray-700 mb-8 text-lg leading-relaxed">
               Start by checking which providers are available in your area. Our service is completely free to use.
             </p>
-            <button
+            {/*<button
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
                          transition text-white px-8 py-4 rounded-full font-semibold shadow-lg focus:outline-none
                          focus:ring-4 focus:ring-blue-400"
             >
               Check Availability
-            </button>
+            </button>*/}
           </div>
           <div className="w-full md:w-1/3 hidden md:block">
             <img

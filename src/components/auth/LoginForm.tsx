@@ -9,6 +9,59 @@ type LoginFormProps = {
   onSwitchToRegister: () => void;
 };
 
+function TermsPrivacyNotice() {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <div className="text-sm text-gray-700">
+      <p>
+        By using this platform, you agree to our{' '}
+        <button
+          onClick={() => setShowModal(true)}
+          className="text-blue-600 hover:underline"
+        >
+          Terms of Service & Privacy Policy
+        </button>
+        .
+      </p>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white max-w-2xl w-full rounded-xl shadow-xl p-6 space-y-4 overflow-y-auto max-h-[80vh]">
+            <h2 className="text-xl font-semibold text-blue-700">📜 Terms of Service</h2>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Purpose:</strong> FiberConnect helps users compare fiber internet providers in Tanzania based on speed, price, and coverage.</li>
+              <li><strong>User Accounts:</strong> You must register with accurate information and maintain account confidentiality.</li>
+              <li><strong>Use of Platform:</strong> Use the site lawfully. Do not submit false data or disrupt services.</li>
+              <li><strong>Service Disclaimer:</strong> We do not sell internet directly. Data comes from third-party ISPs and may vary.</li>
+              <li><strong>Admin Access:</strong> Admin features are only for authorized users and must not be misused.</li>
+              <li><strong>Modifications:</strong> Terms may be updated. Continued use indicates your agreement to changes.</li>
+            </ul>
+
+            <h2 className="text-xl font-semibold text-blue-700 pt-4">🔒 Privacy Policy</h2>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Data Collection:</strong> We collect name, email, and location to improve provider matching.</li>
+              <li><strong>Data Use:</strong> Your data helps us improve the platform and connect you with ISPs.</li>
+              <li><strong>Data Sharing:</strong> We don’t sell or rent your info. It’s only shared with ISPs to set up services.</li>
+              <li><strong>Security:</strong> Standard security practices are in place, but users must also protect their information.</li>
+              <li><strong>User Rights:</strong> You may update or delete your account anytime by contacting support.</li>
+            </ul>
+
+            <div className="text-right pt-4">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -200,7 +253,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+                className="absolute right-3 top-3 text-gray-500 werknemers:text-gray-700 focus:outline-none"
                 tabIndex={-1}
                 disabled={loading}
               >
@@ -235,17 +288,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
               aria-describedby="agree-error"
               disabled={loading}
             />
-            <label htmlFor="agree" className="text-gray-700 select-none cursor-pointer text-sm">
-              I agree to the{' '}
-              <a
-                href="https://yourdomain.com/terms-privacy"
-                className="text-blue-600 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Terms & Privacy
-              </a>
-            </label>
+            <TermsPrivacyNotice />
           </div>
           {agreeError && (
             <p id="agree-error" className="text-red-600 text-sm mt-1 ml-8 font-medium" aria-live="assertive">
