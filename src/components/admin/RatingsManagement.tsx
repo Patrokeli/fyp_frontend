@@ -81,236 +81,182 @@ export function RatingsManagement() {
         setRatings(mockRatings);
         setLoading(false);
       }, 800);
-    } catch (err) {
+    } catch {
       setError('Failed to load ratings data');
       setLoading(false);
     }
   }, []);
 
   const sortedRatings = React.useMemo(() => {
-    let sortableItems = [...ratings];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
+    const items = [...ratings];
+    items.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return items;
   }, [ratings, sortConfig]);
 
   const filteredRatings = React.useMemo(() => {
-    return sortedRatings.filter(
-      (rating) =>
-        rating.providerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rating.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rating.comment.toLowerCase().includes(searchTerm.toLowerCase())
+    return sortedRatings.filter((r) =>
+      [r.providerName, r.userName, r.comment].join(' ').toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sortedRatings, searchTerm]);
 
   const requestSort = (key: keyof Rating) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
     setSortConfig({ key, direction });
   };
 
-  const getSortIcon = (key: keyof Rating) => {
-    if (sortConfig.key !== key) return null;
-    return sortConfig.direction === 'asc' ? (
-      <ChevronUp className="h-4 w-4 ml-1 inline" />
-    ) : (
-      <ChevronDown className="h-4 w-4 ml-1 inline" />
-    );
-  };
+  const getSortIcon = (key: keyof Rating) =>
+    sortConfig.key === key ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />) : null;
 
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
+  const clearSearch = () => setSearchTerm('');
+
+  const averageRating = ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length || 0;
+
+  const topProvider =
+    ratings.length > 0
+      ? Object.values(
+          ratings.reduce((acc: Record<string, { name: string; total: number; count: number }>, curr) => {
+            if (!acc[curr.providerId]) {
+              acc[curr.providerId] = { name: curr.providerName, total: 0, count: 0 };
+            }
+            acc[curr.providerId].total += curr.rating;
+            acc[curr.providerId].count++;
+            return acc;
+          }, {})
+        ).sort((a, b) => b.total / b.count - a.total / a.count)[0].name
+      : 'N/A';
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-600 border-solid"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-        <p className="text-red-500">{error}</p>
+      <div className="p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg dark:bg-red-900/20 dark:text-red-300 dark:border-red-600">
+        <p>{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Service Ratings</h2>
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <div className="space-y-8">
+      {/* Header + Search */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Service Ratings</h2>
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
-            placeholder="Search ratings..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
           />
           {searchTerm && (
             <button
               onClick={clearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard title="Total Ratings" value={ratings.length.toString()} />
+        <MetricCard
+          title="Average Rating"
+          value={averageRating.toFixed(1)}
+          icon={
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className={`h-5 w-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+              ))}
+            </div>
+          }
+        />
+        <MetricCard title="Top Provider" value={topProvider} />
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl shadow border border-gray-200 dark:border-gray-700">
+        <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+          <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs uppercase">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('providerName')}
-              >
-                <div className="flex items-center">
-                  Provider
-                  {getSortIcon('providerName')}
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('userName')}
-              >
-                <div className="flex items-center">
-                  User
-                  {getSortIcon('userName')}
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('rating')}
-              >
-                <div className="flex items-center">
-                  Rating
-                  {getSortIcon('rating')}
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                Comment
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('createdAt')}
-              >
-                <div className="flex items-center">
-                  Date
-                  {getSortIcon('createdAt')}
-                </div>
-              </th>
+              {['providerName', 'userName', 'rating', 'comment', 'createdAt'].map((key) => (
+                <th
+                  key={key}
+                  className="px-6 py-4 whitespace-nowrap"
+                  onClick={['providerName', 'userName', 'rating', 'createdAt'].includes(key) ? () => requestSort(key as keyof Rating) : undefined}
+                >
+                  <div className={`flex items-center ${['providerName', 'userName', 'rating', 'createdAt'].includes(key) ? 'cursor-pointer hover:underline' : ''}`}>
+                    {key === 'providerName' && 'Provider'}
+                    {key === 'userName' && 'User'}
+                    {key === 'rating' && 'Rating'}
+                    {key === 'comment' && 'Comment'}
+                    {key === 'createdAt' && 'Date'}
+                    {getSortIcon(key as keyof Rating)}
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {filteredRatings.length > 0 ? (
-              filteredRatings.map((rating) => (
-                <tr key={rating.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {rating.providerName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {rating.userName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+              filteredRatings.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{r.providerName}</td>
+                  <td className="px-6 py-4">{r.userName}</td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${i < rating.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                        />
+                        <Star key={i} className={`h-4 w-4 ${i < r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
                       ))}
-                      <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
-                        ({rating.rating}/5)
-                      </span>
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({r.rating}/5)</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                    {rating.comment}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(rating.createdAt).toLocaleDateString()}
-                  </td>
+                  <td className="px-6 py-4 max-w-xs truncate">{r.comment}</td>
+                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No ratings found
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  No ratings found.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Ratings</h3>
-          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
-            {ratings.length}
-          </p>
-        </div>
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Average Rating</h3>
-          <div className="mt-1 flex items-center">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-5 w-5 ${
-                    i < Math.round(ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
-              {(ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length || 0).toFixed(1)}
-            </span>
-          </div>
-        </div>
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Top Provider</h3>
-          <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white truncate">
-            {ratings.length > 0
-              ? Object.values(
-                  ratings.reduce((acc: {[key: string]: {name: string; total: number; count: number}}, curr) => {
-                    if (!acc[curr.providerId]) {
-                      acc[curr.providerId] = { name: curr.providerName, total: 0, count: 0 };
-                    }
-                    acc[curr.providerId].total += curr.rating;
-                    acc[curr.providerId].count++;
-                    return acc;
-                  }, {})
-                ).sort((a: any, b: any) => (b.total / b.count) - (a.total / a.count))[0].name
-              : 'N/A'}
-          </p>
-        </div>
+function MetricCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h4>
+      <div className="mt-2 flex items-center space-x-2">
+        {icon}
+        <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
       </div>
     </div>
   );
