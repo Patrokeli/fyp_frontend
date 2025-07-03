@@ -79,6 +79,20 @@ const colorSchemes = {
   },
 };
 
+// Region color mapping - you can customize these colors
+const regionColors = {
+  'North': { light: '#6366F1', dark: '#818CF8' },
+  'South': { light: '#EC4899', dark: '#F472B6' },
+  'East': { light: '#10B981', dark: '#34D399' },
+  'West': { light: '#F59E0B', dark: '#FBBF24' },
+  'Central': { light: '#3B82F6', dark: '#60A5FA' },
+  'Northeast': { light: '#8B5CF6', dark: '#A78BFA' },
+  'Northwest': { light: '#EF4444', dark: '#F87171' },
+  'Southeast': { light: '#14B8A6', dark: '#2DD4BF' },
+  'Southwest': { light: '#F97316', dark: '#FB923C' },
+  'Unknown': { light: '#64748B', dark: '#94A3B8' }
+};
+
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -314,7 +328,13 @@ export function AdminDashboard() {
           )}
           
           {!isLoading && !error && activeTab === 'dashboard' && (
-            <DashboardContent stats={stats} registrationData={registrationData} regionData={regionData} colors={colors} />
+            <DashboardContent 
+              stats={stats} 
+              registrationData={registrationData} 
+              regionData={regionData} 
+              colors={colors} 
+              isDarkMode={isDarkMode}
+            />
           )}
           
           {activeTab === 'providers' && <ProviderManagement />}
@@ -351,7 +371,38 @@ const SidebarButton = ({ icon: Icon, label, isActive, onClick, colors }: any) =>
 );
 
 // Dashboard Content
-const DashboardContent = ({ stats, registrationData, regionData, colors }: any) => {
+const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkMode }: any) => {
+  // Generate colors based on regions
+  const getRegionColors = (regions: string[]) => {
+    return regions.map(region => {
+      // Default to 'Unknown' if region not in our mapping
+      const regionKey = Object.keys(regionColors).includes(region) ? region : 'Unknown';
+      return isDarkMode 
+        ? regionColors[regionKey as keyof typeof regionColors].dark 
+        : regionColors[regionKey as keyof typeof regionColors].light;
+    });
+  };
+
+  // Generate RGBA colors with opacity for charts
+  const getRegionColorsWithOpacity = (regions: string[], opacity: number) => {
+    return regions.map(region => {
+      const regionKey = Object.keys(regionColors).includes(region) ? region : 'Unknown';
+      const color = isDarkMode 
+        ? regionColors[regionKey as keyof typeof regionColors].dark 
+        : regionColors[regionKey as keyof typeof regionColors].light;
+      
+      // Convert hex to RGBA
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    });
+  };
+
+  const regionLabels = regionData.map((r: any) => r.region);
+  const regionBgColors = getRegionColors(regionLabels);
+  const regionBgColorsWithOpacity = getRegionColorsWithOpacity(regionLabels, 0.7);
+
   const lineChartOptions = {
     responsive: true,
     plugins: {
@@ -420,7 +471,7 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        display: false,
         labels: {
           color: colors.chartText,
         }
@@ -455,23 +506,13 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
   };
 
   const barChartData = {
-    labels: regionData.map((r: any) => r.region),
+    labels: regionLabels,
     datasets: [
       {
         label: 'Users by Region',
         data: regionData.map((r: any) => r.count),
-        backgroundColor: [
-          'rgba(99, 102, 241, 0.7)',
-          'rgba(79, 70, 229, 0.7)',
-          'rgba(67, 56, 202, 0.7)',
-          'rgba(55, 48, 163, 0.7)',
-        ],
-        borderColor: [
-          'rgba(99, 102, 241, 1)',
-          'rgba(79, 70, 229, 1)',
-          'rgba(67, 56, 202, 1)',
-          'rgba(55, 48, 163, 1)',
-        ],
+        backgroundColor: regionBgColorsWithOpacity,
+        borderColor: regionBgColors,
         borderWidth: 1,
         borderRadius: 4,
       },
@@ -501,18 +542,12 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
   };
 
   const pieChartData = {
-    labels: regionData.map((r: any) => r.region),
+    labels: regionLabels,
     datasets: [
       {
         label: 'Users by Region',
         data: regionData.map((r: any) => r.count),
-        backgroundColor: [
-          'rgba(99, 102, 241, 0.7)',
-          'rgba(79, 70, 229, 0.7)',
-          'rgba(67, 56, 202, 0.7)',
-          'rgba(55, 48, 163, 0.7)',
-          'rgba(49, 46, 129, 0.7)',
-        ],
+        backgroundColor: regionBgColorsWithOpacity,
         borderColor: colors.card,
         borderWidth: 1,
       },
@@ -571,6 +606,19 @@ const DashboardContent = ({ stats, registrationData, regionData, colors }: any) 
         <h3 className={`text-lg font-semibold mb-4 ${colors.textPrimary}`}>Users by Region</h3>
         <div className="h-80">
           <Bar data={barChartData} options={barChartOptions} />
+        </div>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          {regionData.map((region: any, index: number) => (
+            <div key={region.region} className="flex items-center">
+              <div 
+                className="w-3 h-3 rounded-full mr-2" 
+                style={{ backgroundColor: regionBgColors[index] }}
+              />
+              <span className={`text-sm ${colors.textSecondary}`}>
+                {region.region}: <span className="font-medium">{region.count}</span>
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
