@@ -112,7 +112,8 @@ export function AdminDashboard() {
   const [registrationData, setRegistrationData] = useState<any[]>([]);
   const [regionData, setRegionData] = useState<{ region: string; count: number }[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(3);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const colors = isDarkMode ? colorSchemes.dark : colorSchemes.light;
 
@@ -203,6 +204,17 @@ export function AdminDashboard() {
     fetchData();
   }, []);
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setIsLoggingOut(false);
+    }
+  };
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -255,9 +267,6 @@ export function AdminDashboard() {
           </button>
         </div>
 
-        {/* Search Bar */}
-        
-
         {/* Main Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-2">
           <SidebarSection title="MAIN">
@@ -282,47 +291,48 @@ export function AdminDashboard() {
               onClick={() => changeTab('users')} 
               colors={colors} 
             />
-          
           </SidebarSection>
-
-         
-
-         
         </nav>
 
         {/* User Profile & Logout */}
         <div className={`p-4 border-t ${colors.border} space-y-4`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium">
-                AD
+          {user && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <p className={`font-medium ${colors.textPrimary}`}>{user.name || 'User'}</p>
+                  <p className={`text-xs ${colors.textSecondary}`}>
+                    {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Admin'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className={`font-medium ${colors.textPrimary}`}>Admin User</p>
-                <p className={`text-xs ${colors.textSecondary}`}>Super Admin</p>
-              </div>
+              <button 
+                onClick={clearNotifications}
+                className="relative p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                <Bell className="h-5 w-5 text-gray-400" />
+                {unreadNotifications > 0 && (
+                  <span className={`absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-xs ${colors.notificationBadge}`}>
+                    {unreadNotifications}
+                  </span>
+                )}
+              </button>
             </div>
-            <button 
-              onClick={clearNotifications}
-              className="relative p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-            >
-              <Bell className="h-5 w-5 text-gray-400" />
-              {unreadNotifications > 0 && (
-                <span className={`absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-xs ${colors.notificationBadge}`}>
-                  {unreadNotifications}
-                </span>
-              )}
-            </button>
-          </div>
+          )}
           <button
-            onClick={() => {
-              logout();
-              setIsSidebarOpen(false);
-            }}
-            className={`flex items-center justify-center w-full py-2 rounded-lg transition-colors ${colors.logoutHover} font-medium`}
+            onClick={handleLogout}
+            className={`flex items-center justify-center w-full py-2 rounded-lg transition-colors ${
+              isLoggingOut 
+                ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' 
+                : colors.logoutHover
+            } font-medium`}
+            disabled={isLoggingOut}
           >
             <LogOut className="h-5 w-5 mr-2" />
-            Logout
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
           </button>
         </div>
       </aside>
