@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Zap, CheckCircle, ArrowRight, XCircle } from 'lucide-react';
+import { Zap, CheckCircle, ArrowRight, XCircle, UserPlus, LogIn } from 'lucide-react';
 import { RegisterForm } from './auth/RegisterForm';
+import { LoginForm } from './auth/LoginForm';
 import { useAuth } from '../contexts/AuthContext';
 
 export function Hero() {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const { user } = useAuth();
 
   // Fiber optic cable animation effect
@@ -60,19 +62,17 @@ export function Hero() {
 
   const handleActionClick = () => {
     if (!user) {
-      setShowRegisterPrompt(true);
+      setShowAuthPrompt(true);
       return;
     }
-    // Redirect to comparison page or perform action for logged in users
     window.location.href = '#providers';
   };
 
   const handleCoverageClick = () => {
     if (!user) {
-      setShowRegisterPrompt(true);
+      setShowAuthPrompt(true);
       return;
     }
-    // Redirect to coverage page or perform action for logged in users
     window.location.href = '#coverage';
   };
 
@@ -184,29 +184,68 @@ export function Hero() {
         </div>
       </div>
 
-      {showRegisterPrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-xl font-bold mb-4">Registration Required</h3>
-            <p className="text-gray-600 mb-6">
-              Please register or login to access provider comparisons and coverage information.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button 
-                onClick={() => setShowRegisterPrompt(false)} 
-                className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-md"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowRegisterPrompt(false);
-                  setShowRegisterForm(true);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200"
-              >
-                Register Now
-              </button>
+      {/* Enhanced Authentication Prompt */}
+      {showAuthPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-700 max-w-md w-full overflow-hidden transform transition-all">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Zap className="h-6 w-6 text-yellow-400" />
+                    Join FiberFinder
+                  </h3>
+                  <p className="text-gray-300 mt-1">Unlock full access to our services</p>
+                </div>
+                <button 
+                  onClick={() => setShowAuthPrompt(false)} 
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gray-700/50 p-4 rounded-lg border-l-4 border-yellow-500">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-white">Why create an account?</h4>
+                      <p className="text-gray-300 text-sm mt-1">
+                        Save your comparisons, get personalized recommendations, and access exclusive deals on fiber internet packages.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowAuthPrompt(false);
+                      setShowRegisterForm(true);
+                    }}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    Create Free Account
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowAuthPrompt(false);
+                      setShowLoginForm(true);
+                    }}
+                    className="flex items-center justify-center gap-2 bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium border border-gray-600 transition-all"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Sign In to Existing Account
+                  </button>
+                </div>
+
+                <div className="text-center text-gray-400 text-xs mt-4">
+                  By continuing, you agree to our Terms of Service and Privacy Policy
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -221,7 +260,21 @@ export function Hero() {
           }}
           onSwitchToLogin={() => {
             setShowRegisterForm(false);
-            // Add logic to switch to login form if needed
+            setShowLoginForm(true);
+          }}
+        />
+      )}
+
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onSuccess={() => {
+            setShowLoginForm(false);
+            // Redirect or perform action after successful login
+          }}
+          onSwitchToRegister={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
           }}
         />
       )}
