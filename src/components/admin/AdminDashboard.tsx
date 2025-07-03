@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
+import { RatingsManagement } from './RatingsManagement';
+import { SupportManagement } from './SupportManagement';
 import {
   LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Briefcase,
   ChevronDown, ChevronUp, Activity, MapPin, UserPlus, Database,
-  Settings, HelpCircle, Bell, Search, Calendar, FileText, Shield
+  Settings, HelpCircle, Bell, Search,Mail, Calendar, Star, FileText, Shield
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
@@ -37,7 +39,7 @@ ChartJS.register(
   Filler
 );
 
-type Tab = 'dashboard' | 'providers' | 'users' | 'reports' | 'settings';
+type Tab = 'dashboard' | 'providers' |'support'| 'users' | 'ratings' | 'reports' | 'settings';
 
 const colorSchemes = {
   light: {
@@ -292,6 +294,24 @@ export function AdminDashboard() {
               colors={colors} 
             />
           </SidebarSection>
+          <SidebarSection title="FEEDBACK">
+            <SidebarButton 
+              icon={Star} 
+              label="Ratings" 
+              isActive={activeTab === 'ratings'} 
+              onClick={() => changeTab('ratings')} 
+              colors={colors} 
+            />
+          </SidebarSection>
+          <SidebarSection title="SUPPORT">
+          <SidebarButton 
+            icon={Mail} 
+            label="Support Requests" 
+            isActive={activeTab === 'support'} 
+            onClick={() => changeTab('support')} 
+            colors={colors} 
+          />
+        </SidebarSection>
         </nav>
 
         {/* User Profile & Logout */}
@@ -351,6 +371,8 @@ export function AdminDashboard() {
               {activeTab === 'dashboard' && <Activity className="h-5 w-5" />}
               {activeTab === 'providers' && <Briefcase className="h-5 w-5" />}
               {activeTab === 'users' && <Users className="h-5 w-5" />}
+              {activeTab === 'ratings' && <Star className="h-5 w-5" />}
+              {activeTab === 'support' && <SupportManagement />}
               {activeTab === 'reports' && <FileText className="h-5 w-5" />}
               {activeTab === 'settings' && <Settings className="h-5 w-5" />}
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
@@ -396,6 +418,7 @@ export function AdminDashboard() {
           
           {activeTab === 'providers' && <ProviderManagement />}
           {activeTab === 'users' && <UserManagement />}
+          {activeTab === 'ratings' && <RatingsManagement />}
           {activeTab === 'reports' && (
             <div className={`p-6 rounded-lg ${colors.card} ${colors.border} border`}>
               <h2 className={`text-xl font-bold mb-4 ${colors.textPrimary}`}>Reports</h2>
