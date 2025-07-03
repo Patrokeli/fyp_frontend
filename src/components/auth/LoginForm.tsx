@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { LogIn, X, User } from 'lucide-react';
 
@@ -13,24 +14,26 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // ✅ use React Router navigation
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!agree) {
-    setError('You must agree to the Terms & Privacy');
-    return;
-  }
-  try {
-    await login(email, password);
-    // Add this line to force state refresh:
-    window.location.reload(); // Or better: navigate('/dashboard');
-    onSuccess?.();
-    onClose();
-  } catch (err) {
-    setError('Invalid credentials');
-  }
-};
+    e.preventDefault();
+
+    if (!agree) {
+      setError('You must agree to the Terms & Privacy');
+      return;
+    }
+
+    try {
+      await login(email, password);
+      onSuccess?.();       // Optional success handler
+      onClose();           // Close the modal
+      navigate('/dashboard'); // ✅ Navigate without full page reload
+    } catch (err) {
+      setError('Invalid credentials');
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,6 +46,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
       <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto transition-all">
+        
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -103,6 +107,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
               checked={agree}
               onChange={() => setAgree(!agree)}
               className="form-checkbox h-4 w-4 text-blue-600"
+              id="agree"
             />
             <label htmlFor="agree" className="text-gray-600">
               I agree to the{' '}
