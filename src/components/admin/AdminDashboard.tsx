@@ -256,18 +256,7 @@ export function AdminDashboard() {
         </div>
 
         {/* Search Bar */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className={`relative rounded-lg ${colors.searchBg}`}>
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              className={`block w-full pl-10 pr-3 py-2 rounded-lg ${colors.searchBg} focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colors.textPrimary}`}
-              placeholder="Search..."
-            />
-          </div>
-        </div>
+        
 
         {/* Main Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-2">
@@ -293,48 +282,12 @@ export function AdminDashboard() {
               onClick={() => changeTab('users')} 
               colors={colors} 
             />
-            <SidebarButton 
-              icon={FileText} 
-              label="Reports" 
-              isActive={activeTab === 'reports'} 
-              onClick={() => changeTab('reports')} 
-              colors={colors} 
-            />
+          
           </SidebarSection>
 
-          <SidebarSection title="MANAGEMENT">
-            <SidebarButton 
-              icon={Calendar} 
-              label="Calendar" 
-              isActive={false} 
-              onClick={() => {}} 
-              colors={colors} 
-            />
-            <SidebarButton 
-              icon={Database} 
-              label="Database" 
-              isActive={false} 
-              onClick={() => {}} 
-              colors={colors} 
-            />
-          </SidebarSection>
+         
 
-          <SidebarSection title="PREFERENCES">
-            <SidebarButton 
-              icon={Settings} 
-              label="Settings" 
-              isActive={activeTab === 'settings'} 
-              onClick={() => changeTab('settings')} 
-              colors={colors} 
-            />
-            <SidebarButton 
-              icon={HelpCircle} 
-              label="Help Center" 
-              isActive={false} 
-              onClick={() => {}} 
-              colors={colors} 
-            />
-          </SidebarSection>
+         
         </nav>
 
         {/* User Profile & Logout */}
