@@ -12,55 +12,55 @@ export function Header({ onRegisterClick, onLoginClick }: HeaderProps) {
   const { user, logout } = useAuth();
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <span className="text-blue-600 font-bold text-xl">FiberConnect</span>
-            <span className="text-orange-500 font-bold text-xl">Tanzania</span>
+          <div className="flex items-center space-x-1 text-2xl font-extrabold">
+            <span className="text-blue-700">FiberConnect</span>
+            <span className="text-orange-500">Tanzania</span>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 items-center">
-            <a href="#" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Home</a>
-            <a href="#providers" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Compare Providers</a>
+          <nav className="hidden md:flex space-x-6 items-center text-[15px] font-medium">
+            <a href="#" className="text-gray-700 hover:text-blue-600 transition">Home</a>
+            <a href="#providers" className="text-gray-700 hover:text-blue-600 transition">Compare Providers</a>
 
             <div className="relative group">
-              <button className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium inline-flex items-center">
+              <button className="inline-flex items-center text-gray-700 hover:text-blue-600 transition">
                 Services
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
+              <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transform transition duration-200 z-20">
                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Fiber Internet</a>
                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Installation</a>
                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Support</a>
               </div>
             </div>
 
-            <a href="#how-it-works" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">How It Works</a>
-            <a href="#faq" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">FAQ</a>
+            <a href="#how-it-works" className="text-gray-700 hover:text-blue-600 transition">How It Works</a>
+            <a href="#faq" className="text-gray-700 hover:text-blue-600 transition">FAQ</a>
           </nav>
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <span className="text-gray-700">Welcome, {user.name}</span>
-                <button onClick={logout} className="flex items-center text-gray-600 hover:text-gray-900">
+                <span className="text-gray-700">Hi, <span className="font-semibold">{user.name}</span></span>
+                <button onClick={logout} className="flex items-center text-gray-600 hover:text-red-600 transition">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button onClick={onLoginClick} className="text-gray-600 hover:text-gray-900 flex items-center">
+                <button onClick={onLoginClick} className="text-gray-600 hover:text-blue-600 transition flex items-center">
                   <LogIn className="h-4 w-4 mr-2" />
                   Login
                 </button>
                 <button
                   onClick={onRegisterClick}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  className="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-md text-sm font-medium shadow-md"
                 >
                   Register Now
                 </button>
@@ -70,7 +70,10 @@ export function Header({ onRegisterClick, onLoginClick }: HeaderProps) {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-gray-100 transition"
+            >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -79,8 +82,8 @@ export function Header({ onRegisterClick, onLoginClick }: HeaderProps) {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div className="md:hidden animate-slide-down origin-top bg-white shadow-md z-40">
+          <div className="px-4 pt-4 pb-4 space-y-2">
             <a href="#" className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">Home</a>
             <a href="#providers" className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">Compare Providers</a>
             <a href="#" className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">Services</a>
@@ -88,19 +91,25 @@ export function Header({ onRegisterClick, onLoginClick }: HeaderProps) {
             <a href="#faq" className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">FAQ</a>
 
             {user ? (
-              <button onClick={logout} className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+              <button
+                onClick={logout}
+                className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+              >
                 <LogOut className="h-5 w-5 mr-2" />
                 Logout ({user.name})
               </button>
             ) : (
               <div className="space-y-2">
-                <button onClick={onLoginClick} className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+                <button
+                  onClick={onLoginClick}
+                  className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                >
                   <LogIn className="h-5 w-5 mr-2" />
                   Login
                 </button>
                 <button
                   onClick={onRegisterClick}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-md"
                 >
                   Register Now
                 </button>
