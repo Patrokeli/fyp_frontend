@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
 import { RatingsManagement } from './RatingsManagement';
+import { SupportManagement } from './SupportManagement';
 import {
   LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Briefcase,
   ChevronDown, ChevronUp, Activity, MapPin, UserPlus, Database,
-  Settings, HelpCircle, Bell, Search, Calendar, Star, FileText, Shield
+  Settings, HelpCircle, Bell, Search,Mail, Calendar, Star, FileText, Shield
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
@@ -38,7 +39,7 @@ ChartJS.register(
   Filler
 );
 
-type Tab = 'dashboard' | 'providers' | 'users' | 'ratings' | 'reports' | 'settings';
+type Tab = 'dashboard' | 'providers' |'support'| 'users' | 'ratings' | 'reports' | 'settings';
 
 const colorSchemes = {
   light: {
@@ -302,6 +303,15 @@ export function AdminDashboard() {
               colors={colors} 
             />
           </SidebarSection>
+          <SidebarSection title="SUPPORT">
+          <SidebarButton 
+            icon={Mail} 
+            label="Support Requests" 
+            isActive={activeTab === 'support'} 
+            onClick={() => changeTab('support')} 
+            colors={colors} 
+          />
+        </SidebarSection>
         </nav>
 
         {/* User Profile & Logout */}
@@ -362,6 +372,7 @@ export function AdminDashboard() {
               {activeTab === 'providers' && <Briefcase className="h-5 w-5" />}
               {activeTab === 'users' && <Users className="h-5 w-5" />}
               {activeTab === 'ratings' && <Star className="h-5 w-5" />}
+              {activeTab === 'support' && <SupportManagement />}
               {activeTab === 'reports' && <FileText className="h-5 w-5" />}
               {activeTab === 'settings' && <Settings className="h-5 w-5" />}
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
