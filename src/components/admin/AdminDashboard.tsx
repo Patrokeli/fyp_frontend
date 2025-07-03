@@ -3,7 +3,8 @@ import { ProviderManagement } from './ProviderManagement';
 import { UserManagement } from './UserManagement';
 import {
   LayoutGrid, Users, LogOut, Home, Menu, X, Moon, Sun, Briefcase,
-  ChevronDown, ChevronUp, Activity, MapPin, UserPlus, Database
+  ChevronDown, ChevronUp, Activity, MapPin, UserPlus, Database,
+  Settings, HelpCircle, Bell, Search, Calendar, FileText, Shield
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
@@ -36,7 +37,7 @@ ChartJS.register(
   Filler
 );
 
-type Tab = 'dashboard' | 'providers' | 'users';
+type Tab = 'dashboard' | 'providers' | 'users' | 'reports' | 'settings';
 
 const colorSchemes = {
   light: {
@@ -57,6 +58,10 @@ const colorSchemes = {
     positiveText: 'text-emerald-600',
     chartGrid: 'rgba(229, 231, 235, 1)',
     chartText: 'rgba(75, 85, 99, 1)',
+    sidebarActive: 'bg-indigo-50 text-indigo-700',
+    sidebarHover: 'hover:bg-gray-100',
+    searchBg: 'bg-gray-100',
+    notificationBadge: 'bg-red-500 text-white',
   },
   dark: {
     background: 'bg-gray-950',
@@ -76,32 +81,19 @@ const colorSchemes = {
     positiveText: 'text-emerald-400',
     chartGrid: 'rgba(31, 41, 55, 1)',
     chartText: 'rgba(209, 213, 219, 1)',
+    sidebarActive: 'bg-indigo-900/30 text-indigo-300',
+    sidebarHover: 'hover:bg-gray-800',
+    searchBg: 'bg-gray-800',
+    notificationBadge: 'bg-red-600 text-white',
   },
 };
 
-// Updated color configurations
 const chartColors = {
   blueShades: [
-    '#3B82F6', // blue-500
-    '#60A5FA', // blue-400
-    '#93C5FD', // blue-300
-    '#BFDBFE', // blue-200
-    '#DBEAFE', // blue-100
-    '#1D4ED8', // blue-700
-    '#1E40AF', // blue-800
-    '#1E3A8A', // blue-900
+    '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#1D4ED8', '#1E40AF', '#1E3A8A',
   ],
   vibrantColors: [
-    '#6366F1', // indigo-500
-    '#EC4899', // pink-500
-    '#10B981', // emerald-500
-    '#F59E0B', // amber-500
-    '#3B82F6', // blue-500
-    '#8B5CF6', // violet-500
-    '#EF4444', // red-500
-    '#14B8A6', // teal-500
-    '#F97316', // orange-500
-    '#64748B', // slate-500
+    '#6366F1', '#EC4899', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EF4444', '#14B8A6', '#F97316', '#64748B',
   ],
 };
 
@@ -119,6 +111,7 @@ export function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [registrationData, setRegistrationData] = useState<any[]>([]);
   const [regionData, setRegionData] = useState<{ region: string; count: number }[]>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(3);
   const { logout } = useAuth();
 
   const colors = isDarkMode ? colorSchemes.dark : colorSchemes.light;
@@ -153,7 +146,7 @@ export function AdminDashboard() {
         const newUsers = Array.isArray(customers) ? 
           customers.filter((user: any) => new Date(user.created_at) > thirtyDaysAgo).length : 0;
         
-        // Calculate growth rate (placeholder logic)
+        // Calculate growth rate
         const growthRate = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) : 0;
 
         // Group registrations by month
@@ -236,60 +229,147 @@ export function AdminDashboard() {
     setIsSidebarOpen(false);
   };
 
+  const clearNotifications = () => {
+    setUnreadNotifications(0);
+  };
+
   return (
     <div className={`min-h-screen flex ${colors.background}`}>
-      {/* Sidebar */}
+      {/* Enhanced Sidebar */}
       <aside
-        className={`w-64 h-screen fixed top-0 left-0 z-50 shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`w-64 h-screen fixed top-0 left-0 z-50 shadow-xl transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 ${colors.sidebar} ${colors.border} border-r`}
+        } md:translate-x-0 ${colors.sidebar} ${colors.border} border-r flex flex-col`}
       >
-        <div className={`p-4 border-b flex justify-between items-center ${colors.border}`}>
+        <div className={`p-4 border-b ${colors.border} flex justify-between items-center`}>
           <span className={`font-bold text-2xl ${colors.textAccent} flex items-center gap-2`}>
-            <Database className="h-6 w-6" />
-            AdminHub
+            <Shield className="h-6 w-6" />
+            AdminPanel
           </span>
           <button 
             onClick={toggleSidebar} 
-            className="md:hidden" 
+            className="md:hidden p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700" 
             aria-label="Close Sidebar"
           >
-            <X className="h-6 w-6 text-gray-400 hover:text-gray-600" />
+            <X className="h-6 w-6 text-gray-400" />
           </button>
         </div>
-        <nav className="flex flex-col mt-6 p-2">
-          <SidebarButton 
-            icon={Home} 
-            label="Dashboard" 
-            isActive={activeTab === 'dashboard'} 
-            onClick={() => changeTab('dashboard')} 
-            colors={colors} 
-          />
-          <SidebarButton 
-            icon={LayoutGrid} 
-            label="Providers" 
-            isActive={activeTab === 'providers'} 
-            onClick={() => changeTab('providers')} 
-            colors={colors} 
-          />
-          <SidebarButton 
-            icon={Users} 
-            label="Users" 
-            isActive={activeTab === 'users'} 
-            onClick={() => changeTab('users')} 
-            colors={colors} 
-          />
+
+        {/* Search Bar */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`relative rounded-lg ${colors.searchBg}`}>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className={`block w-full pl-10 pr-3 py-2 rounded-lg ${colors.searchBg} focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colors.textPrimary}`}
+              placeholder="Search..."
+            />
+          </div>
+        </div>
+
+        {/* Main Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 px-2">
+          <SidebarSection title="MAIN">
+            <SidebarButton 
+              icon={Home} 
+              label="Dashboard" 
+              isActive={activeTab === 'dashboard'} 
+              onClick={() => changeTab('dashboard')} 
+              colors={colors} 
+            />
+            <SidebarButton 
+              icon={Briefcase} 
+              label="Providers" 
+              isActive={activeTab === 'providers'} 
+              onClick={() => changeTab('providers')} 
+              colors={colors} 
+            />
+            <SidebarButton 
+              icon={Users} 
+              label="Users" 
+              isActive={activeTab === 'users'} 
+              onClick={() => changeTab('users')} 
+              colors={colors} 
+            />
+            <SidebarButton 
+              icon={FileText} 
+              label="Reports" 
+              isActive={activeTab === 'reports'} 
+              onClick={() => changeTab('reports')} 
+              colors={colors} 
+            />
+          </SidebarSection>
+
+          <SidebarSection title="MANAGEMENT">
+            <SidebarButton 
+              icon={Calendar} 
+              label="Calendar" 
+              isActive={false} 
+              onClick={() => {}} 
+              colors={colors} 
+            />
+            <SidebarButton 
+              icon={Database} 
+              label="Database" 
+              isActive={false} 
+              onClick={() => {}} 
+              colors={colors} 
+            />
+          </SidebarSection>
+
+          <SidebarSection title="PREFERENCES">
+            <SidebarButton 
+              icon={Settings} 
+              label="Settings" 
+              isActive={activeTab === 'settings'} 
+              onClick={() => changeTab('settings')} 
+              colors={colors} 
+            />
+            <SidebarButton 
+              icon={HelpCircle} 
+              label="Help Center" 
+              isActive={false} 
+              onClick={() => {}} 
+              colors={colors} 
+            />
+          </SidebarSection>
         </nav>
-        <div className={`mt-auto p-4 border-t ${colors.border}`}>
+
+        {/* User Profile & Logout */}
+        <div className={`p-4 border-t ${colors.border} space-y-4`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium">
+                AD
+              </div>
+              <div>
+                <p className={`font-medium ${colors.textPrimary}`}>Admin User</p>
+                <p className={`text-xs ${colors.textSecondary}`}>Super Admin</p>
+              </div>
+            </div>
+            <button 
+              onClick={clearNotifications}
+              className="relative p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              <Bell className="h-5 w-5 text-gray-400" />
+              {unreadNotifications > 0 && (
+                <span className={`absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-xs ${colors.notificationBadge}`}>
+                  {unreadNotifications}
+                </span>
+              )}
+            </button>
+          </div>
           <button
             onClick={() => {
               logout();
               setIsSidebarOpen(false);
             }}
-            className={`flex items-center px-4 py-3 w-full rounded-lg text-left transition-colors ${colors.logoutHover}`}
+            className={`flex items-center justify-center w-full py-2 rounded-lg transition-colors ${colors.logoutHover} font-medium`}
           >
-            <LogOut className="h-5 w-5 mr-3" />
-            <span className="font-medium">Logout</span>
+            <LogOut className="h-5 w-5 mr-2" />
+            Logout
           </button>
         </div>
       </aside>
@@ -308,10 +388,12 @@ export function AdminDashboard() {
               {activeTab === 'dashboard' && <Activity className="h-5 w-5" />}
               {activeTab === 'providers' && <Briefcase className="h-5 w-5" />}
               {activeTab === 'users' && <Users className="h-5 w-5" />}
+              {activeTab === 'reports' && <FileText className="h-5 w-5" />}
+              {activeTab === 'settings' && <Settings className="h-5 w-5" />}
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <button
               onClick={toggleDarkMode}
               className={`p-2 rounded-full transition-colors ${
@@ -351,6 +433,18 @@ export function AdminDashboard() {
           
           {activeTab === 'providers' && <ProviderManagement />}
           {activeTab === 'users' && <UserManagement />}
+          {activeTab === 'reports' && (
+            <div className={`p-6 rounded-lg ${colors.card} ${colors.border} border`}>
+              <h2 className={`text-xl font-bold mb-4 ${colors.textPrimary}`}>Reports</h2>
+              <p className={colors.textSecondary}>Reports dashboard coming soon</p>
+            </div>
+          )}
+          {activeTab === 'settings' && (
+            <div className={`p-6 rounded-lg ${colors.card} ${colors.border} border`}>
+              <h2 className={`text-xl font-bold mb-4 ${colors.textPrimary}`}>Settings</h2>
+              <p className={colors.textSecondary}>Settings panel coming soon</p>
+            </div>
+          )}
         </main>
       </div>
 
@@ -364,25 +458,39 @@ export function AdminDashboard() {
   );
 }
 
+const SidebarSection = ({ title, children }: { title: string; children: React.ReactNode }) => {
+  return (
+    <div className="mb-6">
+      <h3 className="px-4 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+        {title}
+      </h3>
+      <div className="space-y-1">
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const SidebarButton = ({ icon: Icon, label, isActive, onClick, colors }: any) => (
   <button
     onClick={onClick}
-    className={`flex items-center px-4 py-3 text-left w-full transition-colors rounded-lg mb-1 ${
+    className={`flex items-center w-full px-4 py-2.5 text-left rounded-lg transition-all ${
       isActive 
-        ? `${colors.activeBg} ${colors.textAccent} font-medium border-l-4 ${colors.accentBorder}` 
-        : `${colors.textSecondary} ${colors.hoverBg} ${colors.buttonHover}`
+        ? `${colors.sidebarActive} font-medium` 
+        : `${colors.textSecondary} ${colors.sidebarHover}`
     }`}
   >
-    <Icon className="h-5 w-5 mr-3" />
-    {label}
-    <span className="ml-auto">
-      {isActive ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-    </span>
+    <Icon className={`h-5 w-5 mr-3 ${isActive ? colors.textAccent : colors.textSecondary}`} />
+    <span className={isActive ? colors.textAccent : ''}>{label}</span>
+    {isActive && (
+      <span className="ml-auto">
+        <div className={`h-2 w-2 rounded-full ${colors.textAccent}`} />
+      </span>
+    )}
   </button>
 );
 
 const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkMode }: any) => {
-  // Generate colors for bar chart (blue shades)
   const getBarChartColors = (count: number) => {
     const colors = [];
     for (let i = 0; i < count; i++) {
@@ -391,7 +499,6 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
     return colors;
   };
 
-  // Generate colors for pie chart (vibrant distinct colors)
   const getPieChartColors = (count: number) => {
     const colors = [];
     for (let i = 0; i < count; i++) {
@@ -404,7 +511,6 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
   const barChartColors = getBarChartColors(regionLabels.length);
   const pieChartColors = getPieChartColors(regionLabels.length);
 
-  // Convert colors to RGBA with opacity for some charts
   const toRgba = (hex: string, opacity: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
