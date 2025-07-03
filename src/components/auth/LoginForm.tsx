@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogIn, X, User } from 'lucide-react';
+import { LogIn, X, User, AlertCircle } from 'lucide-react';
 
 type LoginFormProps = {
   onClose: () => void;
@@ -13,12 +13,12 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Separate error states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [agreeError, setAgreeError] = useState('');
-  const [loginError, setLoginError] = useState(''); // for login failure message
+  const [loginError, setLoginError] = useState('');
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -51,6 +51,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
 
     if (hasError) return;
 
+    setLoading(true);
     try {
       await login(email, password);
       onSuccess?.();
@@ -58,6 +59,8 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
       navigate('/dashboard');
     } catch {
       setLoginError('Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,114 +75,127 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
       <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto transition-all">
-        
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
           aria-label="Close login form"
         >
           <X className="h-6 w-6" />
         </button>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
-          <User className="h-6 w-6" />
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-6 flex items-center justify-center gap-2">
+          <User className="h-7 w-7 text-blue-600" />
           Welcome Back
         </h2>
 
-        {/* Login failure error */}
         {loginError && (
           <div
             role="alert"
-            className="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4 text-center"
+            className="bg-red-100 border border-red-400 text-red-700 text-sm px-4 py-3 rounded mb-5 flex items-center gap-2 justify-center font-semibold"
           >
+            <AlertCircle className="w-5 h-5" />
             {loginError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
-            <label htmlFor="email" className="block text-sm text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
             </label>
             <input
               id="email"
               type="email"
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none shadow-sm ${
-                emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              className={`w-full px-4 py-3 border rounded-lg shadow-sm transition focus:outline-none focus:ring-2 ${
+                emailError
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
               }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               aria-describedby="email-error"
               required
+              autoComplete="email"
             />
             {emailError && (
-              <p id="email-error" className="text-red-600 text-sm mt-1">
+              <p id="email-error" className="text-red-600 text-sm mt-1 font-medium">
                 {emailError}
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password (min 8 characters)
             </label>
             <input
               id="password"
               type="password"
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none shadow-sm ${
-                passwordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              className={`w-full px-4 py-3 border rounded-lg shadow-sm transition focus:outline-none focus:ring-2 ${
+                passwordError
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
               }`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby="password-error"
               required
               minLength={8}
+              autoComplete="current-password"
             />
             {passwordError && (
-              <p id="password-error" className="text-red-600 text-sm mt-1">
+              <p id="password-error" className="text-red-600 text-sm mt-1 font-medium">
                 {passwordError}
               </p>
             )}
           </div>
 
-          <div className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center space-x-3">
             <input
               type="checkbox"
               checked={agree}
               onChange={() => setAgree(!agree)}
-              className={`form-checkbox h-4 w-4 text-blue-600 ${
+              className={`h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
                 agreeError ? 'border-red-500' : ''
               }`}
               id="agree"
               aria-describedby="agree-error"
             />
-            <label htmlFor="agree" className="text-gray-600 select-none cursor-pointer">
+            <label htmlFor="agree" className="text-gray-700 select-none cursor-pointer text-sm">
               I agree to the{' '}
-              <a href="#" className="text-blue-600 hover:underline">
+              <a
+                href="#"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Terms & Privacy
               </a>
             </label>
           </div>
           {agreeError && (
-            <p id="agree-error" className="text-red-600 text-sm mt-1 ml-6">
+            <p id="agree-error" className="text-red-600 text-sm mt-1 ml-8 font-medium">
               {agreeError}
             </p>
           )}
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-2 rounded-lg flex items-center justify-center shadow-md gap-2"
+            disabled={loading}
+            className={`w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-3 rounded-lg flex items-center justify-center shadow-md gap-3 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
             <LogIn className="h-5 w-5" />
-            <span>Login</span>
+            <span>{loading ? 'Logging in...' : 'Login'}</span>
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-gray-600 mt-8">
           Don't have an account?{' '}
           <span
             onClick={onSwitchToRegister}
-            className="text-blue-600 font-medium hover:underline cursor-pointer"
+            className="text-blue-600 font-semibold hover:underline cursor-pointer"
           >
             Create one
           </span>
