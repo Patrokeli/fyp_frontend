@@ -87,9 +87,7 @@ export function LoginForm({ onClose, onSuccess, onSwitchToRegister }: LoginFormP
           <div>
             <label htmlFor="password" className="block text-sm text-gray-700 mb-1">
               Password
-              <a href="#" className="float-right text-xs text-blue-600 hover:underline">
-                Forgot password?
-              </a>
+              
             </label>
             <input
               id="password"
