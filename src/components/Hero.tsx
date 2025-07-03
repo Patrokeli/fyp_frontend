@@ -3,6 +3,7 @@ import { Zap, CheckCircle, ArrowRight, XCircle, UserPlus, LogIn } from 'lucide-r
 import { RegisterForm } from './auth/RegisterForm';
 import { LoginForm } from './auth/LoginForm';
 import { useAuth } from '../contexts/AuthContext';
+import backgroundImage from '/src/assets/bg-image.png'; // Adjust this path to where you place the image
 
 export function Hero() {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
@@ -78,14 +79,22 @@ export function Hero() {
 
   return (
     <div className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
+      {/* Background Image Layer */}
+      <div
+        className="absolute inset-0 bg-center bg-cover opacity-30"
+        style={{ backgroundImage: `url(${backgroundImage})`, zIndex: 0 }}
+        aria-hidden="true"
+      />
+
       {/* Animated fiber background */}
       <canvas 
         id="fiberCanvas" 
         className="absolute inset-0 w-full h-full opacity-30"
+        style={{ zIndex: 1 }}
       />
       
       {/* Glowing dots animation */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 2 }}>
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
@@ -102,7 +111,7 @@ export function Hero() {
         ))}
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32" style={{ zIndex: 3 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 animate-fade-in">
