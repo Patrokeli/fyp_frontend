@@ -1,7 +1,13 @@
-import React, { useEffect } from 'react';
-import { Zap, CheckCircle, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Zap, CheckCircle, ArrowRight, XCircle } from 'lucide-react';
+import { RegisterForm } from './auth/RegisterForm';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Hero() {
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
+  const { user } = useAuth();
+
   // Fiber optic cable animation effect
   useEffect(() => {
     const canvas = document.getElementById('fiberCanvas') as HTMLCanvasElement;
@@ -52,6 +58,24 @@ export function Hero() {
     return () => cancelAnimationFrame(animate);
   }, []);
 
+  const handleActionClick = () => {
+    if (!user) {
+      setShowRegisterPrompt(true);
+      return;
+    }
+    // Redirect to comparison page or perform action for logged in users
+    window.location.href = '#providers';
+  };
+
+  const handleCoverageClick = () => {
+    if (!user) {
+      setShowRegisterPrompt(true);
+      return;
+    }
+    // Redirect to coverage page or perform action for logged in users
+    window.location.href = '#coverage';
+  };
+
   return (
     <div className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
       {/* Animated fiber background */}
@@ -95,11 +119,17 @@ export function Hero() {
             </p>
             
             <div className="flex gap-4 animate-slide-up delay-200">
-              <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <button 
+                onClick={handleActionClick}
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
                 <span>Compare Providers</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
-              <button className="flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-xl font-medium border border-white/20 transition-all duration-300">
+              <button 
+                onClick={handleCoverageClick}
+                className="flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-xl font-medium border border-white/20 transition-all duration-300"
+              >
                 <span>View Coverage</span>
               </button>
             </div>
@@ -153,6 +183,48 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {showRegisterPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-xl font-bold mb-4">Registration Required</h3>
+            <p className="text-gray-600 mb-6">
+              Please register or login to access provider comparisons and coverage information.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button 
+                onClick={() => setShowRegisterPrompt(false)} 
+                className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowRegisterPrompt(false);
+                  setShowRegisterForm(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200"
+              >
+                Register Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRegisterForm && (
+        <RegisterForm
+          onClose={() => setShowRegisterForm(false)}
+          onSuccess={() => {
+            setShowRegisterForm(false);
+            // Redirect or perform action after successful registration
+          }}
+          onSwitchToLogin={() => {
+            setShowRegisterForm(false);
+            // Add logic to switch to login form if needed
+          }}
+        />
+      )}
     </div>
   );
 }
