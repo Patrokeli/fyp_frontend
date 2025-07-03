@@ -79,18 +79,30 @@ const colorSchemes = {
   },
 };
 
-// Region color mapping - you can customize these colors
-const regionColors = {
-  'North': { light: '#6366F1', dark: '#818CF8' },
-  'South': { light: '#EC4899', dark: '#F472B6' },
-  'East': { light: '#10B981', dark: '#34D399' },
-  'West': { light: '#F59E0B', dark: '#FBBF24' },
-  'Central': { light: '#3B82F6', dark: '#60A5FA' },
-  'Northeast': { light: '#8B5CF6', dark: '#A78BFA' },
-  'Northwest': { light: '#EF4444', dark: '#F87171' },
-  'Southeast': { light: '#14B8A6', dark: '#2DD4BF' },
-  'Southwest': { light: '#F97316', dark: '#FB923C' },
-  'Unknown': { light: '#64748B', dark: '#94A3B8' }
+// Updated color configurations
+const chartColors = {
+  blueShades: [
+    '#3B82F6', // blue-500
+    '#60A5FA', // blue-400
+    '#93C5FD', // blue-300
+    '#BFDBFE', // blue-200
+    '#DBEAFE', // blue-100
+    '#1D4ED8', // blue-700
+    '#1E40AF', // blue-800
+    '#1E3A8A', // blue-900
+  ],
+  vibrantColors: [
+    '#6366F1', // indigo-500
+    '#EC4899', // pink-500
+    '#10B981', // emerald-500
+    '#F59E0B', // amber-500
+    '#3B82F6', // blue-500
+    '#8B5CF6', // violet-500
+    '#EF4444', // red-500
+    '#14B8A6', // teal-500
+    '#F97316', // orange-500
+    '#64748B', // slate-500
+  ],
 };
 
 export function AdminDashboard() {
@@ -352,7 +364,6 @@ export function AdminDashboard() {
   );
 }
 
-// Sidebar Button
 const SidebarButton = ({ icon: Icon, label, isActive, onClick, colors }: any) => (
   <button
     onClick={onClick}
@@ -370,38 +381,39 @@ const SidebarButton = ({ icon: Icon, label, isActive, onClick, colors }: any) =>
   </button>
 );
 
-// Dashboard Content
 const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkMode }: any) => {
-  // Generate colors based on regions
-  const getRegionColors = (regions: string[]) => {
-    return regions.map(region => {
-      // Default to 'Unknown' if region not in our mapping
-      const regionKey = Object.keys(regionColors).includes(region) ? region : 'Unknown';
-      return isDarkMode 
-        ? regionColors[regionKey as keyof typeof regionColors].dark 
-        : regionColors[regionKey as keyof typeof regionColors].light;
-    });
+  // Generate colors for bar chart (blue shades)
+  const getBarChartColors = (count: number) => {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      colors.push(chartColors.blueShades[i % chartColors.blueShades.length]);
+    }
+    return colors;
   };
 
-  // Generate RGBA colors with opacity for charts
-  const getRegionColorsWithOpacity = (regions: string[], opacity: number) => {
-    return regions.map(region => {
-      const regionKey = Object.keys(regionColors).includes(region) ? region : 'Unknown';
-      const color = isDarkMode 
-        ? regionColors[regionKey as keyof typeof regionColors].dark 
-        : regionColors[regionKey as keyof typeof regionColors].light;
-      
-      // Convert hex to RGBA
-      const r = parseInt(color.slice(1, 3), 16);
-      const g = parseInt(color.slice(3, 5), 16);
-      const b = parseInt(color.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-    });
+  // Generate colors for pie chart (vibrant distinct colors)
+  const getPieChartColors = (count: number) => {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      colors.push(chartColors.vibrantColors[i % chartColors.vibrantColors.length]);
+    }
+    return colors;
   };
 
   const regionLabels = regionData.map((r: any) => r.region);
-  const regionBgColors = getRegionColors(regionLabels);
-  const regionBgColorsWithOpacity = getRegionColorsWithOpacity(regionLabels, 0.7);
+  const barChartColors = getBarChartColors(regionLabels.length);
+  const pieChartColors = getPieChartColors(regionLabels.length);
+
+  // Convert colors to RGBA with opacity for some charts
+  const toRgba = (hex: string, opacity: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const barChartColorsWithOpacity = barChartColors.map(color => toRgba(color, 0.7));
+  const pieChartColorsWithOpacity = pieChartColors.map(color => toRgba(color, 0.7));
 
   const lineChartOptions = {
     responsive: true,
@@ -472,9 +484,6 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
     plugins: {
       legend: {
         display: false,
-        labels: {
-          color: colors.chartText,
-        }
       },
       tooltip: {
         backgroundColor: colors.card,
@@ -511,8 +520,8 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
       {
         label: 'Users by Region',
         data: regionData.map((r: any) => r.count),
-        backgroundColor: regionBgColorsWithOpacity,
-        borderColor: regionBgColors,
+        backgroundColor: barChartColorsWithOpacity,
+        borderColor: barChartColors,
         borderWidth: 1,
         borderRadius: 4,
       },
@@ -547,7 +556,7 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
       {
         label: 'Users by Region',
         data: regionData.map((r: any) => r.count),
-        backgroundColor: regionBgColorsWithOpacity,
+        backgroundColor: pieChartColorsWithOpacity,
         borderColor: colors.card,
         borderWidth: 1,
       },
@@ -612,7 +621,7 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
             <div key={region.region} className="flex items-center">
               <div 
                 className="w-3 h-3 rounded-full mr-2" 
-                style={{ backgroundColor: regionBgColors[index] }}
+                style={{ backgroundColor: barChartColors[index] }}
               />
               <span className={`text-sm ${colors.textSecondary}`}>
                 {region.region}: <span className="font-medium">{region.count}</span>
@@ -625,7 +634,6 @@ const DashboardContent = ({ stats, registrationData, regionData, colors, isDarkM
   );
 };
 
-// Stat Card
 const StatCard = ({ icon: Icon, title, value, change, colors }: any) => (
   <div className={`p-5 rounded-xl shadow-sm ${colors.card} ${colors.border} border transition-all hover:shadow-md`}>
     <div className="flex items-start justify-between">
