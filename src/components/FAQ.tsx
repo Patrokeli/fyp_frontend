@@ -82,12 +82,12 @@ export function FAQ({ onRegisterClick }: FAQProps) {
 
         <div className="mt-10 text-center">
           <p className="text-gray-600 mb-4">Still have questions? Contact our support team.</p>
-          <button
-            onClick={onRegisterClick}
+          <p
+            
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-medium transition shadow-md"
           >
-            Contact Support
-          </button>
+           calls: +255 756789653, email: fiberconnect@gmail.com
+          </p>
         </div>
       </div>
     </section>

@@ -109,10 +109,10 @@ export function CustomerDashboard() {
   };
 
   const dashboardStats = [
-    { title: "Active Services", value: 3, change: "+2 from last week", icon: <Activity className="h-5 w-5" />, color: "blue" },
-    { title: "Pending Requests", value: 1, change: "1 awaiting approval", icon: <AlertCircle className="h-5 w-5" />, color: "orange" },
-    { title: "Support Tickets", value: 2, change: "1 new today", icon: <HelpCircle className="h-5 w-5" />, color: "purple" },
-    { title: "Average Rating", value: 4.5, change: "+0.2 from last month", icon: <Star className="h-5 w-5" />, color: "green" }
+    { title: "Active Services", value: 0, change: "no changes", icon: <Activity className="h-5 w-5" />, color: "blue" },
+    { title: "Pending Requests", value: 0, change: "no pending request", icon: <AlertCircle className="h-5 w-5" />, color: "orange" },
+    { title: "Support Tickets", value: 0, change: "no support tickets", icon: <HelpCircle className="h-5 w-5" />, color: "purple" },
+    { title: "Average Rating", value: 0, change: "no rating", icon: <Star className="h-5 w-5" />, color: "green" }
   ];
 
   const quickActions: { title: string; icon: JSX.Element; tab: Tab }[] = [
