@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Star, Search, ChevronDown, ChevronUp, X, BarChart2, Filter } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Star, Search, ChevronDown, ChevronUp, X, Filter, BarChart2 } from 'lucide-react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 
@@ -17,6 +17,7 @@ type Rating = {
 };
 
 export function RatingsManagement() {
+  // State hooks - must be at the top
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export function RatingsManagement() {
   const [showFilters, setShowFilters] = useState(false);
   const [minRatingFilter, setMinRatingFilter] = useState<number | null>(null);
 
+  // Data fetching
   useEffect(() => {
     setLoading(true);
     try {
@@ -39,7 +41,7 @@ export function RatingsManagement() {
             providerId: '101',
             providerName: 'FiberNet Pro',
             userId: 'user1',
-            userName: 'John Doe',
+            userName: 'Jackob Juma',
             rating: 5,
             comment: 'Excellent service! Very reliable connection.',
             createdAt: '2023-10-15T09:30:00Z',
@@ -49,7 +51,7 @@ export function RatingsManagement() {
             providerId: '102',
             providerName: 'BroadBand Solutions',
             userId: 'user2',
-            userName: 'Jane Smith',
+            userName: 'Jane Smih',
             rating: 4,
             comment: 'Good speeds but occasional drops.',
             createdAt: '2023-10-14T14:45:00Z',
@@ -59,7 +61,7 @@ export function RatingsManagement() {
             providerId: '103',
             providerName: 'ConnectFast',
             userId: 'user3',
-            userName: 'Robert Johnson',
+            userName: 'Robert Elias',
             rating: 3,
             comment: 'Average service. Customer support could be better.',
             createdAt: '2023-10-12T11:20:00Z',
@@ -69,7 +71,7 @@ export function RatingsManagement() {
             providerId: '101',
             providerName: 'FiberNet Pro',
             userId: 'user4',
-            userName: 'Alice Williams',
+            userName: 'Alice Will',
             rating: 5,
             comment: 'Perfect in every way!',
             createdAt: '2023-10-10T16:15:00Z',
@@ -84,36 +86,6 @@ export function RatingsManagement() {
             comment: 'Frequent outages. Not recommended.',
             createdAt: '2023-10-08T10:05:00Z',
           },
-          {
-            id: '6',
-            providerId: '102',
-            providerName: 'BroadBand Solutions',
-            userId: 'user6',
-            userName: 'Sarah Davis',
-            rating: 4,
-            comment: 'Consistent speeds, good value for money.',
-            createdAt: '2023-10-05T08:20:00Z',
-          },
-          {
-            id: '7',
-            providerId: '103',
-            providerName: 'ConnectFast',
-            userId: 'user7',
-            userName: 'David Wilson',
-            rating: 3,
-            comment: 'Installation took longer than expected.',
-            createdAt: '2023-10-03T13:10:00Z',
-          },
-          {
-            id: '8',
-            providerId: '105',
-            providerName: 'SkyNet',
-            userId: 'user8',
-            userName: 'Emily Taylor',
-            rating: 1,
-            comment: 'Terrible experience. Avoid at all costs.',
-            createdAt: '2023-09-28T17:30:00Z',
-          },
         ];
         setRatings(mockRatings);
         setLoading(false);
@@ -124,7 +96,8 @@ export function RatingsManagement() {
     }
   }, []);
 
-  const sortedRatings = React.useMemo(() => {
+  // Sorting logic
+  const sortedRatings = useMemo(() => {
     const items = [...ratings];
     items.sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -134,7 +107,8 @@ export function RatingsManagement() {
     return items;
   }, [ratings, sortConfig]);
 
-  const filteredRatings = React.useMemo(() => {
+  // Filtering logic
+  const filteredRatings = useMemo(() => {
     let result = sortedRatings.filter((r) =>
       [r.providerName, r.userName, r.comment].join(' ').toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -146,23 +120,8 @@ export function RatingsManagement() {
     return result;
   }, [sortedRatings, searchTerm, minRatingFilter]);
 
-  const requestSort = (key: keyof Rating) => {
-    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
-    setSortConfig({ key, direction });
-  };
-
-  const getSortIcon = (key: keyof Rating) =>
-    sortConfig.key === key ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />) : null;
-
-  const clearSearch = () => {
-    setSearchTerm('');
-    setMinRatingFilter(null);
-  };
-
-  const averageRating = ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length || 0;
-
-  // Calculate provider stats
-  const providerStats = React.useMemo(() => {
+  // Provider statistics
+  const providerStats = useMemo(() => {
     const stats = ratings.reduce((acc: Record<string, { name: string; total: number; count: number; ratings: number[] }>, curr) => {
       if (!acc[curr.providerId]) {
         acc[curr.providerId] = { name: curr.providerName, total: 0, count: 0, ratings: [] };
@@ -182,6 +141,22 @@ export function RatingsManagement() {
     })).sort((a, b) => b.average - a.average);
   }, [ratings]);
 
+  // Helper functions
+  const requestSort = (key: keyof Rating) => {
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: keyof Rating) =>
+    sortConfig.key === key ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />) : null;
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setMinRatingFilter(null);
+  };
+
+  // Derived values
+  const averageRating = ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length || 0;
   const topProvider = providerStats.length > 0 ? providerStats[0].name : 'N/A';
 
   // Chart data
@@ -245,6 +220,40 @@ export function RatingsManagement() {
     ],
   };
 
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: '#6B7280',
+        }
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 5,
+        ticks: {
+          color: '#6B7280',
+        },
+        grid: {
+          color: 'rgba(209, 213, 219, 0.3)',
+        }
+      },
+      x: {
+        ticks: {
+          color: '#6B7280',
+        },
+        grid: {
+          color: 'rgba(209, 213, 219, 0.3)',
+        }
+      }
+    }
+  };
+
+  // Loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -253,6 +262,7 @@ export function RatingsManagement() {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg dark:bg-red-900/20 dark:text-red-300 dark:border-red-600">
@@ -261,21 +271,22 @@ export function RatingsManagement() {
     );
   }
 
+  // Main render
   return (
     <div className="space-y-6">
       {/* Header + Search */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Service Ratings Management</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">📊 Service Ratings Management</h2>
         
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-80">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-400" />
             <input
               type="text"
               placeholder="Search ratings..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400"
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400"
             />
             {searchTerm && (
               <button
@@ -289,7 +300,7 @@ export function RatingsManagement() {
           
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
           >
             <Filter className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -309,7 +320,7 @@ export function RatingsManagement() {
                     onClick={() => setMinRatingFilter(minRatingFilter === star ? null : star)}
                     className={`p-2 rounded-full ${minRatingFilter === star ? 'bg-indigo-100 dark:bg-indigo-900' : 'bg-gray-100 dark:bg-gray-700'}`}
                   >
-                    <Star className={`h-5 w-5 ${star <= (minRatingFilter || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+                    <Star className={`h-5 w-5 ${star <= (minRatingFilter || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} />
                   </button>
                 ))}
               </div>
@@ -330,17 +341,19 @@ export function RatingsManagement() {
           title="Total Ratings" 
           value={ratings.length.toString()} 
           description="All submitted ratings"
+          bgColor="bg-white dark:bg-gray-900"
         />
         <MetricCard
           title="Average Rating"
           value={averageRating.toFixed(1)}
           description="Across all providers"
+          bgColor="bg-white dark:bg-gray-900"
           icon={
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
-                  className={`h-5 w-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} 
+                  className={`h-5 w-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} 
                 />
               ))}
             </div>
@@ -350,6 +363,7 @@ export function RatingsManagement() {
           title="Top Provider" 
           value={topProvider} 
           description="Highest average rating"
+          bgColor="bg-white dark:bg-gray-900"
           icon={<Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />}
         />
       </div>
@@ -375,9 +389,9 @@ export function RatingsManagement() {
       {/* Content based on active tab */}
       {activeTab === 'list' ? (
         /* Ratings Table */
-        <div className="overflow-x-auto rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="overflow-x-auto rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 {['providerName', 'userName', 'rating', 'comment', 'createdAt'].map((key) => (
                   <th
@@ -398,11 +412,11 @@ export function RatingsManagement() {
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredRatings.length > 0 ? (
                 filteredRatings.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
                       {r.providerName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
@@ -413,7 +427,7 @@ export function RatingsManagement() {
                         {[...Array(5)].map((_, i) => (
                           <Star 
                             key={i} 
-                            className={`h-4 w-4 ${i < r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} 
+                            className={`h-4 w-4 ${i < r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} 
                           />
                         ))}
                         <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({r.rating}/5)</span>
@@ -445,73 +459,25 @@ export function RatingsManagement() {
         /* Analytics View */
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Provider Comparison</h3>
+            <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Provider Comparison</h3>
               <div className="h-64">
                 <Bar 
                   data={providerComparisonData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                        labels: {
-                          color: '#6B7280',
-                        }
-                      },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        max: 5,
-                        ticks: {
-                          color: '#6B7280',
-                        },
-                        grid: {
-                          color: 'rgba(209, 213, 219, 0.3)',
-                        }
-                      },
-                      x: {
-                        ticks: {
-                          color: '#6B7280',
-                        },
-                        grid: {
-                          color: 'rgba(209, 213, 219, 0.3)',
-                        }
-                      }
-                    }
-                  }}
+                  options={chartOptions}
                 />
               </div>
             </div>
             
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Rating Distribution</h3>
+            <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Rating Distribution</h3>
               <div className="h-64">
                 <Bar 
                   data={ratingDistributionData}
                   options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                        labels: {
-                          color: '#6B7280',
-                        }
-                      },
-                    },
+                    ...chartOptions,
                     scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: {
-                          color: '#6B7280',
-                        },
-                        grid: {
-                          color: 'rgba(209, 213, 219, 0.3)',
-                        }
-                      },
+                      ...chartOptions.scales,
                       x: {
                         stacked: true,
                         ticks: {
@@ -529,11 +495,11 @@ export function RatingsManagement() {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Provider Ratings Breakdown</h3>
+            <div className="lg:col-span-2 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Provider Ratings Breakdown</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Provider
@@ -549,10 +515,10 @@ export function RatingsManagement() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {providerStats.map((provider) => (
-                      <tr key={provider.name} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      <tr key={provider.name} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
                           {provider.name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -562,7 +528,7 @@ export function RatingsManagement() {
                               {[...Array(5)].map((_, i) => (
                                 <Star 
                                   key={i} 
-                                  className={`h-4 w-4 ${i < Math.round(provider.average) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} 
+                                  className={`h-4 w-4 ${i < Math.round(provider.average) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} 
                                 />
                               ))}
                             </div>
@@ -599,8 +565,8 @@ export function RatingsManagement() {
               </div>
             </div>
             
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Reviews by Provider</h3>
+            <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Reviews by Provider</h3>
               <div className="h-64">
                 <Pie 
                   data={pieChartData}
@@ -626,23 +592,26 @@ export function RatingsManagement() {
   );
 }
 
+// MetricCard component
 function MetricCard({
   title,
   value,
   description,
   icon,
+  bgColor = "bg-white dark:bg-gray-800"
 }: {
   title: string;
   value: string;
   description?: string;
   icon?: React.ReactNode;
+  bgColor?: string;
 }) {
   return (
-    <div className="p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition">
+    <div className={`p-5 ${bgColor} border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition`}>
       <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h4>
       <div className="mt-1 flex items-center justify-between">
         <div>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
           {description && (
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{description}</p>
           )}
